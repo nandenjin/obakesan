@@ -9,7 +9,7 @@ import {
   ArtNetReceiver,
   ArtNetReceiverConnectOptions,
   createArtNetReceiver,
-} from "../lib/ArtNetReceiver";
+} from "../lib/artnet";
 import consola from "consola";
 import { StatusReason, useStatusStore } from "../store/status";
 
