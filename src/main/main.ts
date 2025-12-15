@@ -3,7 +3,8 @@ import { join } from "path";
 import { installExtension, VUEJS_DEVTOOLS } from "electron-devtools-installer";
 import { Controller } from "./Controller";
 import consola from "consola";
-import { toRaw, watch } from "vue";
+import { watch } from "vue";
+import { toRawDeep } from "../lib/reactive";
 
 let mainWindow: BrowserWindow | null;
 let controller: Controller | null;
@@ -60,10 +61,10 @@ app.whenReady().then(async () => {
   );
 
   controller.on("store:emit", (storeId, statePatch) => {
-    consola.debug("Sending store:emit", storeId, statePatch);
+    consola.debug("Sending store:emit", storeId);
     mainWindow?.webContents.send("store:emit", {
       storeId,
-      statePatch: toRaw(statePatch),
+      statePatch: toRawDeep(statePatch),
     });
   });
 
