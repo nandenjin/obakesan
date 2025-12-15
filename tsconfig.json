@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "lib": ["DOM"],
+    "target": "ESNext",
+    "moduleResolution": "bundler",
+    "module": "esnext"
+  }
+}
