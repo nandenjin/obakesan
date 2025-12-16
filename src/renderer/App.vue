@@ -70,8 +70,9 @@ body {
   position: relative;
   overflow-y: auto;
 
-  scrollbar-color: color-mix(in srgb, var(--color-primary) 50%, transparent)
+  scrollbar-color: color-mix(in srgb, var(--color-primary) 25%, transparent 75%)
     transparent;
+  scrollbar-width: thin;
 }
 
 .title-bar {
