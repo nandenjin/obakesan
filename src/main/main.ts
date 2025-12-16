@@ -14,11 +14,10 @@ let controller: Controller | null;
 Menu.setApplicationMenu(null);
 
 app.whenReady().then(async () => {
-  controller = new Controller();
-
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -34,9 +33,48 @@ app.whenReady().then(async () => {
     minHeight: 300,
   });
 
+  mainWindow.on("ready-to-show", () => {
+    consola.debug("Main window is ready");
+
+    controller = new Controller();
+    watch(
+      () => controller?.configStore.input,
+      (input) => {
+        if (!input) return;
+
+        mainWindow?.setTitle(
+          `${input.host}:${input.port} (${input.net}/${input.subnet}/${input.universe})`
+        );
+      },
+      { immediate: true }
+    );
+
+    controller.on("store:emit", (storeId, statePatch) => {
+      consola.debug("Sending store:emit", storeId);
+      mainWindow?.webContents.send("store:emit", {
+        storeId,
+        statePatch: toRawDeep(statePatch),
+      });
+    });
+
+    controller.on("error", (error) => {
+      consola.error(error);
+      mainWindow?.webContents.send("error", error);
+    });
+
+    mainWindow!.show();
+  });
+
+  ipcMain.on("store:emit", (_, { storeId, statePatch }) => {
+    consola.debug("Received store:emit", storeId, statePatch);
+    controller?.emitStoreChange(storeId, statePatch);
+  });
+
   if (app.isPackaged) {
+    consola.debug("Loading renderer from dist...");
     mainWindow.loadFile(pathForEntry);
   } else {
+    consola.debug("Installing extensions...");
     const extensions = await installExtension([VUEJS_DEVTOOLS]);
     consola.debug(
       "Installed extensions:",
@@ -44,8 +82,10 @@ app.whenReady().then(async () => {
     );
 
     if (process.env["ELECTRON_RENDERER_URL"]) {
+      consola.debug("Loading renderer from dev server...");
       mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
     } else {
+      consola.debug("Loading renderer from dist...");
       mainWindow.loadFile(pathForEntry);
     }
 
@@ -53,35 +93,6 @@ app.whenReady().then(async () => {
       mode: "undocked",
     });
   }
-  watch(
-    () => controller?.configStore.input,
-    (input) => {
-      if (!input) return;
-
-      mainWindow?.setTitle(
-        `${input.host}:${input.port} (${input.net}/${input.subnet}/${input.universe})`
-      );
-    },
-    { immediate: true }
-  );
-
-  controller.on("store:emit", (storeId, statePatch) => {
-    consola.debug("Sending store:emit", storeId);
-    mainWindow?.webContents.send("store:emit", {
-      storeId,
-      statePatch: toRawDeep(statePatch),
-    });
-  });
-
-  controller.on("error", (error) => {
-    consola.error(error);
-    mainWindow?.webContents.send("error", error);
-  });
-
-  ipcMain.on("store:emit", (_, { storeId, statePatch }) => {
-    consola.debug("Received store:emit", storeId, statePatch);
-    controller?.emitStoreChange(storeId, statePatch);
-  });
 });
 
 app.on("window-all-closed", () => {
