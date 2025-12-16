@@ -23,7 +23,10 @@ app.whenReady().then(async () => {
       preload: join(__dirname, "../preload/preload.js"),
     },
     titleBarStyle: "hidden",
-    titleBarOverlay: true,
+    titleBarOverlay: {
+      color: "rgba(0,0,0,0)",
+      symbolColor: "#FFFFFF",
+    },
     backgroundColor: "#111111",
     minWidth: 600,
     minHeight: 300,

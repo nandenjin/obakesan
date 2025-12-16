@@ -223,7 +223,6 @@ onUnmounted(() => {
 .header {
   position: relative;
   font-size: 12px;
-  user-select: none;
   cursor: pointer;
   padding: 20px;
   transition: opacity 0.15s ease-out;

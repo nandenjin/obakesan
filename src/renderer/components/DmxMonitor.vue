@@ -96,7 +96,6 @@ onBeforeUnmount(() => {
 
     grid-template-columns: auto 1fr;
     grid-template-rows: auto 1fr;
-    user-select: none;
     font-size: var(--cell-font-size);
 
     .header-top,
