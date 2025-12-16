@@ -26,6 +26,8 @@ module.exports = {
     artifactName: "obakesan-${version}.${ext}",
   },
   linux: {
+    executableName: "obakesan",
+    artifactName: "obakesan-${version}.${ext}",
     target: ["AppImage", "snap", "deb"],
     maintainer: "Kazumi Inada <hello@nandenjin.com>",
     category: "Utility",
