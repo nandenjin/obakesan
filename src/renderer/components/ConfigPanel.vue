@@ -152,9 +152,9 @@ function getStatusMessage(
       return "Connecting...";
     case "connected":
       if (typeof lastUpdate === "number" && isInputLost(lastUpdate)) {
-        return "No data received";
+        return "Connected but no data received";
       }
-      return "Connected";
+      return "Connected and transferring data";
     case "error": {
       if (reasons.length === 0) {
         return null;
@@ -175,7 +175,7 @@ function getStatusMessage(
 }
 
 function isInputLost(lastUpdate: number) {
-  return lastUpdate < Date.now() - 1000;
+  return lastUpdate < now.value - 1000;
 }
 
 function setConfig() {

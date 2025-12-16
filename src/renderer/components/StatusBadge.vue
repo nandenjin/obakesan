@@ -1,6 +1,6 @@
 <template>
   <span v-if="props.icon" class="badge" :class="icon">
-    <svg class="logo" viewBox="0 0 94 94">
+    <svg width="100%" height="100%" class="logo" viewBox="0 0 94 94">
       <g v-if="props.icon === 'failed'" class="failed">
         <path
           d="M41.072,46.729l-18.826,-18.826l5.657,-5.657l18.826,18.826l18.826,-18.826l5.657,5.657l-18.826,18.826l18.826,18.826l-5.657,5.657l-18.826,-18.826l-18.826,18.826l-5.657,-5.657l18.826,-18.826Z"
@@ -42,6 +42,23 @@ const props = defineProps<{
 
     .logo {
       fill: var(--color-background);
+    }
+  }
+
+  &.in-progress {
+    background-color: #fb4;
+    border: none;
+
+    .logo {
+      fill: var(--color-background);
+    }
+  }
+
+  &.connected {
+    border-color: #4f4;
+
+    .logo {
+      fill: #4f4;
     }
   }
 }
