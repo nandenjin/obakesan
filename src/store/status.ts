@@ -10,10 +10,10 @@ export type ConnectionStatus = "idle" | "connecting" | "connected" | "error";
 export const useStatusStore = defineStore("status", () => {
   const input = reactive<{
     connection: ConnectionStatus;
-    reasons: Set<StatusReason>;
+    reasons: StatusReason[];
   }>({
     connection: "idle",
-    reasons: new Set(),
+    reasons: [],
   });
 
   return {

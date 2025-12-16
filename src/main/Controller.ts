@@ -74,7 +74,7 @@ export class Controller extends EventEmitter {
         logger.log("Starting receiver...", options);
         try {
           this.statusStore.input.connection = "connecting";
-          this.statusStore.input.reasons.clear();
+          this.statusStore.input.reasons.length = 0;
 
           const receiver = await createArtNetReceiver(options);
 
@@ -95,7 +95,7 @@ export class Controller extends EventEmitter {
         } catch (error) {
           logger.error(error);
           this.statusStore.input.connection = "error";
-          this.statusStore.input.reasons.add(StatusReason.FAILED_TO_CONNECT);
+          this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
         }
       },
       {
