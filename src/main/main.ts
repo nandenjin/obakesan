@@ -6,6 +6,8 @@ import consola from "consola";
 import { watch } from "vue";
 import { toRawDeep } from "../lib/reactive";
 
+const pathForEntry = join(__dirname, "../renderer/index.html");
+
 let mainWindow: BrowserWindow | null;
 let controller: Controller | null;
 
@@ -33,7 +35,7 @@ app.whenReady().then(async () => {
   });
 
   if (app.isPackaged) {
-    mainWindow.loadFile("index.html");
+    mainWindow.loadFile(pathForEntry);
   } else {
     const extensions = await installExtension([VUEJS_DEVTOOLS]);
     consola.debug(
@@ -44,7 +46,7 @@ app.whenReady().then(async () => {
     if (process.env["ELECTRON_RENDERER_URL"]) {
       mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
     } else {
-      mainWindow.loadFile("index.html");
+      mainWindow.loadFile(pathForEntry);
     }
 
     mainWindow.webContents.openDevTools({
