@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/nandenjin/obakesan/compare/v0.0.1...v0.0.2) (2025-12-16)
+
+
+### Miscellaneous Chores
+
+* Release 0.0.2 ([22edea4](https://github.com/nandenjin/obakesan/commit/22edea448004025cdc731ad7b24da44fd7612f20))
+
 ## 0.0.1 (2025-12-16)
 
 ### Features
