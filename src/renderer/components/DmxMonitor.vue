@@ -1,5 +1,8 @@
 <template>
-  <div class="dmx-monitor">
+  <div
+    class="dmx-monitor"
+    :class="{ 'size-mini': containerWidth < breakpointW }"
+  >
     <div class="table">
       <div></div>
       <div class="header-top">
@@ -42,11 +45,11 @@ const logger = consola.withTag("DmxMonitor");
 const body = useTemplateRef("body");
 
 const dmxStore = useDmxStore();
-const windowWidth = ref<number>(window.innerWidth);
 const containerWidth = ref<number>(800);
 
-const cellSize = computed(() => (windowWidth.value < 600 ? 30 : 40));
-const cellGap = computed(() => (windowWidth.value < 600 ? 3 : 4));
+const breakpointW = 800;
+const cellSize = computed(() => (containerWidth.value < breakpointW ? 30 : 40));
+const cellGap = computed(() => (containerWidth.value < breakpointW ? 3 : 4));
 const numColumn = computed(() =>
   Math.floor(containerWidth.value / (cellSize.value + cellGap.value))
 );
@@ -58,7 +61,6 @@ const onResize = () => {
   }
   const bounding = body.value.getBoundingClientRect();
   containerWidth.value = bounding.width;
-  windowWidth.value = window.innerWidth;
 };
 
 onMounted(() => {
@@ -73,14 +75,14 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .dmx-monitor {
-  --cell-size: 30px;
-  --cell-gap: 3px;
-  --cell-font-size: 10px;
+  --cell-size: 40px;
+  --cell-gap: 4px;
+  --cell-font-size: 13px;
 
-  @media (min-width: 800px) {
-    --cell-size: 40px;
-    --cell-gap: 4px;
-    --cell-font-size: 13px;
+  &.size-mini {
+    --cell-size: 30px;
+    --cell-gap: 3px;
+    --cell-font-size: 10px;
   }
 
   .table {
@@ -125,6 +127,7 @@ onBeforeUnmount(() => {
       position: relative;
       background-color: #222;
       text-align: center;
+      border-radius: 5px;
 
       .value {
         position: absolute;

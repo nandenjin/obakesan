@@ -1,7 +1,10 @@
 <template>
   <div class="app" :class="{ 'config-panel-open': configPanelOpen }">
-    <header></header>
-    <ConfigPanel v-model:open="configPanelOpen" />
+    <header>
+      <div class="title-bar"></div>
+      <ConfigPanel v-model:open="configPanelOpen" class="config-panel" />
+    </header>
+
     <div @click="configPanelOpen = false">
       <DmxMonitor class="dmx-monitor" />
     </div>
@@ -42,6 +45,10 @@ body {
     max-height: calc(100vh - 30px);
     overflow-y: hidden;
 
+    header {
+      background: var(--color-background);
+    }
+
     .dmx-monitor {
       opacity: 0.3;
       pointer-events: none;
@@ -50,11 +57,25 @@ body {
 }
 
 header {
-  -webkit-app-region: drag;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: fit-content;
+  background: linear-gradient(
+    to bottom,
+    var(--color-background) 85%,
+    transparent
+  );
+  border-bottom: 1px solid rgba(var(--color-primary), 0.5);
+
+  .title-bar {
+    height: 20px;
+    -webkit-app-region: drag;
+  }
 }
 
 .dmx-monitor {
   transition: opacity 0.15s ease-out;
-  margin: 0 15px;
+  margin: 40px 15px 0;
 }
 </style>
