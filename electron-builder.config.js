@@ -1,6 +1,6 @@
 module.exports = {
   appId: "com.nandenjin.obakesan",
-  productName: "obake-san",
+  productName: "obakesan",
   directories: {
     buildResources: "build",
   },
@@ -15,7 +15,7 @@ module.exports = {
   asarUnpack: ["resources/**"],
   // afterSign: 'build/notarize.js',
   win: {
-    executableName: "obakesan",
+    target: ["zip"],
   },
   mac: {
     notarize: !!process.env.ENABLE_APPLE_NOTARIZATION,
