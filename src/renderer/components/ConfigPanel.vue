@@ -11,18 +11,25 @@
           {{ config.input.net }}/{{ config.input.subnet }}/{{
             config.input.universe
           }}
-          <StatusBadge
-            :status="status.input.connection"
-            :reasons="status.input.reasons"
-          />
+          <HoverTooltip
+            :content="
+              getStatusMessage(
+                status.input.connection,
+                status.input.reasons,
+                dmx.lastUpdate
+              )
+            "
+          >
+            <StatusBadge
+              :icon="statusIconInput"
+              :reasons="status.input.reasons"
+            />
+          </HoverTooltip>
         </span>
         <span class="arrow"></span>
         <span>No output</span>
       </div>
-      <ProductLogo
-        class="logo"
-        :variant="status.input.connection === 'error' ? 'shock' : 'default'"
-      />
+      <ProductLogo class="logo" :variant="logoVariant" />
     </div>
     <div class="editor" :class="{ 'is-open': isOpen }">
       <div class="editor-group">
@@ -82,17 +89,24 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, watch } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useConfigStore } from "../../store/config";
 import LabelledInput from "./LabelledInput.vue";
 import ProductLogo from "./ProductLogo.vue";
 import StatusBadge from "./StatusBadge.vue";
-import { useStatusStore } from "../../store/status";
+import {
+  ConnectionStatus,
+  StatusReason,
+  useStatusStore,
+} from "../../store/status";
+import HoverTooltip from "./HoverTooltip.vue";
+import { useDmxStore } from "../../store/dmx";
 
 const isOpen = defineModel<boolean>("open");
 
 const config = useConfigStore();
 const status = useStatusStore();
+const dmx = useDmxStore();
 
 const input = reactive({
   host: "",
@@ -101,6 +115,68 @@ const input = reactive({
   subnet: 0,
   universe: 0,
 });
+
+const logoVariant = computed(() => {
+  if (status.input.connection === "error") {
+    return "shock";
+  }
+  if (isInputLost(dmx.lastUpdate)) {
+    return "question";
+  }
+  return "default";
+});
+
+const statusIconInput = computed(() => {
+  switch (status.input.connection) {
+    case "error":
+      return "failed";
+    case "connecting":
+      return "in-progress";
+    case "connected":
+      if (isInputLost(dmx.lastUpdate)) {
+        return "in-progress";
+      }
+      return "connected";
+    default:
+      return undefined;
+  }
+});
+
+function getStatusMessage(
+  connection: ConnectionStatus,
+  reasons: StatusReason[],
+  lastUpdate?: number
+) {
+  switch (connection) {
+    case "connecting":
+      return "Connecting...";
+    case "connected":
+      if (typeof lastUpdate === "number" && isInputLost(lastUpdate)) {
+        return "No data received";
+      }
+      return "Connected";
+    case "error": {
+      if (reasons.length === 0) {
+        return null;
+      }
+
+      const code = reasons[0];
+
+      switch (code) {
+        case StatusReason.FAILED_TO_CONNECT:
+          return "Failed to connect";
+        default:
+          return "Unknown error";
+      }
+    }
+    default:
+      return null;
+  }
+}
+
+function isInputLost(lastUpdate: number) {
+  return lastUpdate < Date.now() - 1000;
+}
 
 function setConfig() {
   config.input.host = input.host;
@@ -130,12 +206,22 @@ watch(
   },
   { immediate: true }
 );
+
+const now = ref<number>(Date.now());
+const nowTimer = ref<ReturnType<typeof setInterval>>();
+onMounted(() => {
+  nowTimer.value = setInterval(() => {
+    now.value = Date.now();
+  }, 500);
+});
+onUnmounted(() => {
+  clearInterval(nowTimer.value);
+});
 </script>
 
 <style scoped>
 .header {
   position: relative;
-  line-height: 0;
   font-size: 12px;
   user-select: none;
   cursor: pointer;
@@ -154,6 +240,7 @@ watch(
   .indicator {
     display: grid;
     grid-template-columns: auto 1fr auto;
+    align-content: center;
     gap: 50px;
   }
 
@@ -166,6 +253,10 @@ watch(
     }
 
     &::before {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      margin: auto;
       width: 100%;
       height: 1px;
       background-color: white;
@@ -174,12 +265,14 @@ watch(
     &::after {
       position: absolute;
       top: 0;
+      bottom: 0;
       right: 0;
       width: 5px;
       height: 5px;
-      border: solid white;
-      border-width: 1px 1px 0 0;
-      transform: rotate(45deg) translate(-50%);
+      border: 1px solid;
+      border-color: var(--color-primary) var(--color-primary) transparent
+        transparent;
+      transform: translateY(50%) rotate(45deg) translateY(50%);
       transform-origin: right bottom;
     }
   }
@@ -200,12 +293,12 @@ watch(
   gap: 5px;
   height: 0;
   overflow-y: hidden;
-  transition: height 0.15s ease-out;
-  margin-top: 20px;
+  transition: height 0.15s ease-out, margin-top 0.15s ease-out;
   padding: 0 20px;
 
   &.is-open {
     height: fit-content;
+    margin-top: 5px;
   }
 }
 
