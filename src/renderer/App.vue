@@ -24,6 +24,7 @@ import { ref } from "vue";
 import ConfigPanel from "./components/ConfigPanel.vue";
 import DmxMonitor from "./components/DmxMonitor.vue";
 import { platform } from "./util";
+import "@fontsource/roboto-mono";
 
 const configPanelOpen = ref<boolean>(false);
 </script>
@@ -39,7 +40,7 @@ html,
 body {
   background-color: var(--color-background);
   color: var(--color-primary);
-  font: normal 11px monospace;
+  font: normal 11px "Roboto Mono", monospace;
   margin: 0;
   overflow: hidden;
   user-select: none;
