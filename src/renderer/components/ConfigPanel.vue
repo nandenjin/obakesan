@@ -16,7 +16,7 @@
               @ {{ Math.round(dmx.fps) }}fps
             </template>
           </span>
-          <HoverTooltip
+          <BaseHoverTooltip
             :content="
               getStatusMessage(
                 status.input.connection,
@@ -25,11 +25,11 @@
               )
             "
           >
-            <StatusBadge
+            <AppStatusBadge
               :icon="statusIconInput"
               :reasons="status.input.reasons"
             />
-          </HoverTooltip>
+          </BaseHoverTooltip>
         </span>
         <span class="arrow"></span>
         <span class="interface-part">
@@ -54,157 +54,60 @@
             </span>
           </template>
           <span v-else>(Monitor only)</span>
-          <HoverTooltip
+          <BaseHoverTooltip
             :content="
               getStatusMessage(status.output.connection, status.output.reasons)
             "
           >
-            <StatusBadge
+            <AppStatusBadge
               :icon="statusIconOutput"
               :reasons="status.output.reasons"
             />
-          </HoverTooltip>
+          </BaseHoverTooltip>
         </span>
       </div>
-      <ProductLogo class="logo" :variant="logoVariant" />
+      <AppLogo class="logo" :variant="logoVariant" />
     </div>
     <div class="editor" :class="{ 'is-open': isOpen }">
-      <div class="editor-group">
-        <div class="title"><span>Input</span></div>
-        <div class="content">
-          <div class="input-group">
-            <LabelledInput
-              v-model="input.host"
-              label="Host"
-              type="text"
-              size="20"
-            />
-            <LabelledInput
-              v-model="input.port"
-              label="Port"
-              type="number"
-              :min="1"
-              :max="65535"
-              :step="1"
-            />
-          </div>
-          <div class="input-group">
-            <LabelledInput
-              v-model="input.net"
-              label="Net"
-              type="number"
-              :min="0"
-              :max="16"
-              :step="1"
-            />
-            <LabelledInput
-              v-model="input.subnet"
-              label="Subnet"
-              type="number"
-              :min="0"
-              :max="16"
-              :step="1"
-            />
-            <LabelledInput
-              v-model="input.universe"
-              label="Universe"
-              type="number"
-              :min="0"
-              :max="16"
-              :step="1"
-            />
-          </div>
-        </div>
-      </div>
+      <ConfigPanelSection title="Input">
+        <ConfigPanelArtNetInput
+          v-model:host="input.host"
+          v-model:port="input.port"
+          v-model:net="input.net"
+          v-model:subnet="input.subnet"
+          v-model:universe="input.universe"
+        />
+      </ConfigPanelSection>
 
-      <div class="editor-group">
-        <div class="title">
-          <span>Output</span>
+      <ConfigPanelSection title="Output">
+        <div class="input-group">
+          <BaseSelectorSwitch
+            v-model="outputSelection"
+            :options="[
+              { label: 'Off', value: 'off' },
+              { label: 'Art-Net', value: 'artnet' },
+              { label: 'FTDI USB', value: 'ftdi' },
+            ]"
+          />
         </div>
-        <div class="content">
-          <div class="input-group">
-            <SelectorSwitch
-              v-model="outputSelection"
-              :options="[
-                { label: 'Off', value: 'off' },
-                { label: 'Art-Net', value: 'artnet' },
-                { label: 'FTDI USB', value: 'ftdi' },
-              ]"
-            />
-          </div>
-          <div v-if="output.type === 'ftdi'" class="input-group">
-            <select
-              v-model="output.deviceSerial"
-              class="select-input"
-              :disabled="status.output.ftdiDevices.length === 0"
-            >
-              <option v-if="status.output.ftdiDevices.length === 0" value="">
-                (No FTDI devices found)
-              </option>
-              <option
-                v-for="device in status.output.ftdiDevices"
-                :key="device.serialNumber"
-                :value="device.serialNumber"
-              >
-                {{ device.description }} ({{ device.serialNumber }})
-              </option>
-            </select>
-          </div>
-          <div v-if="output.type === 'artnet'" class="input-group">
-            <LabelledInput
-              v-model="output.host"
-              label="Host"
-              type="text"
-              size="15"
-              placeholder="192.168.1.10"
-            />
-            <LabelledInput
-              v-model="output.port"
-              label="Port"
-              type="number"
-              :min="1"
-              :max="65535"
-              :step="1"
-            />
-          </div>
-          <div v-if="output.type === 'artnet'" class="input-group">
-            <LabelledInput
-              v-model="output.net"
-              label="Net"
-              type="number"
-              :min="0"
-              :max="16"
-              :step="1"
-            />
-            <LabelledInput
-              v-model="output.subnet"
-              label="Subnet"
-              type="number"
-              :min="0"
-              :max="16"
-              :step="1"
-            />
-            <LabelledInput
-              v-model="output.universe"
-              label="Universe"
-              type="number"
-              :min="0"
-              :max="16"
-              :step="1"
-            />
-          </div>
-          <div class="input-group">
-            <LabelledInput
-              v-model="output.fps"
-              label="FPS"
-              type="number"
-              :min="1"
-              :max="44"
-              :step="1"
-            />
-          </div>
-        </div>
-      </div>
+        <template v-if="output.enabled">
+          <ConfigPanelFtdiOutput
+            v-if="output.type === 'ftdi'"
+            v-model:device-serial="output.deviceSerial"
+            v-model:fps="output.fps"
+            :ftdi-devices="status.output.ftdiDevices"
+          />
+          <ConfigPanelArtNetOutput
+            v-else-if="output.type === 'artnet'"
+            v-model:host="output.host"
+            v-model:port="output.port"
+            v-model:net="output.net"
+            v-model:subnet="output.subnet"
+            v-model:universe="output.universe"
+            v-model:fps="output.fps"
+          />
+        </template>
+      </ConfigPanelSection>
     </div>
   </nav>
 </template>
@@ -212,17 +115,20 @@
 <script lang="ts" setup>
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useConfigStore } from "../../store/config";
-import LabelledInput from "./LabelledInput.vue";
-import ProductLogo from "./ProductLogo.vue";
-import StatusBadge from "./StatusBadge.vue";
+import AppLogo from "./AppLogo.vue";
+import AppStatusBadge from "./AppStatusBadge.vue";
 import {
   ConnectionStatus,
   StatusReason,
   useStatusStore,
 } from "../../store/status";
-import HoverTooltip from "./HoverTooltip.vue";
+import BaseHoverTooltip from "./BaseHoverTooltip.vue";
 import { useDmxStore } from "../../store/dmx";
-import SelectorSwitch from "./SelectorSwitch.vue";
+import BaseSelectorSwitch from "./BaseSelectorSwitch.vue";
+import ConfigPanelSection from "./ConfigPanelSection.vue";
+import ConfigPanelArtNetInput from "./ConfigPanelArtNetInput.vue";
+import ConfigPanelArtNetOutput from "./ConfigPanelArtNetOutput.vue";
+import ConfigPanelFtdiOutput from "./ConfigPanelFtdiOutput.vue";
 
 const isOpen = defineModel<boolean>("open");
 
@@ -515,47 +421,12 @@ onUnmounted(() => {
   &.is-open {
     height: fit-content;
     margin-top: 5px;
+    padding-bottom: 20px;
   }
 }
 
 .input-group {
   display: flex;
   gap: 5px;
-}
-
-.editor-group {
-  display: grid;
-  grid-template-columns: minmax(70px, auto) 1fr;
-  gap: 5px;
-
-  & > .title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(255, 255, 255, 0.2);
-    padding: 10px;
-  }
-
-  & > .content {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-}
-
-.select-input {
-  appearance: none;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 5px;
-  width: 100%;
-  outline: none;
-  font: inherit;
-
-  option {
-    background: #333;
-    color: white;
-  }
 }
 </style>

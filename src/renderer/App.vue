@@ -13,11 +13,11 @@
       </header>
 
       <main @click="configPanelOpen = false">
-        <DmxMonitor class="dmx-monitor" />
+        <AppDmxMonitor class="dmx-monitor" />
       </main>
     </div>
     <div v-if="configPanelOpen" class="info">
-      <VersionInfo />
+      <AppVersionInfo />
     </div>
   </div>
 </template>
@@ -25,10 +25,10 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import ConfigPanel from "./components/ConfigPanel.vue";
-import DmxMonitor from "./components/DmxMonitor.vue";
+import AppDmxMonitor from "./components/AppDmxMonitor.vue";
 import { platform } from "./util";
 import "@fontsource/roboto-mono";
-import VersionInfo from "./components/VersionInfo.vue";
+import AppVersionInfo from "./components/AppVersionInfo.vue";
 
 const configPanelOpen = ref<boolean>(false);
 </script>
