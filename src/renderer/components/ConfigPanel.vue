@@ -107,12 +107,18 @@
 
       <div class="editor-group">
         <div class="title">
-          <label>
-            <input v-model="output.enabled" type="checkbox" />
-            <span>Output</span>
-          </label>
+          <span>Output</span>
         </div>
         <div class="content">
+          <div class="input-group">
+            <SelectorSwitch
+              v-model="outputSelection"
+              :options="[
+                { label: 'Off', value: 'off' },
+                { label: 'Art-Net', value: 'artnet' },
+              ]"
+            />
+          </div>
           <div class="input-group">
             <LabelledInput
               v-model="output.host"
@@ -185,6 +191,7 @@ import {
 } from "../../store/status";
 import HoverTooltip from "./HoverTooltip.vue";
 import { useDmxStore } from "../../store/dmx";
+import SelectorSwitch from "./SelectorSwitch.vue";
 
 const isOpen = defineModel<boolean>("open");
 
@@ -192,7 +199,7 @@ const config = useConfigStore();
 const status = useStatusStore();
 const dmx = useDmxStore();
 
-const input = reactive({
+const input = reactive<typeof config.input>({
   host: "",
   port: 0,
   net: 0,
@@ -200,8 +207,9 @@ const input = reactive({
   universe: 0,
 });
 
-const output = reactive({
+const output = reactive<typeof config.output>({
   enabled: false,
+  type: "artnet",
   host: "",
   port: 0,
   net: 0,
@@ -263,6 +271,24 @@ const isInputValid = computed(
 const isOutputValid = computed(
   () => !status.output.reasons.includes(StatusReason.INVALID_CONFIG)
 );
+
+const outputSelection = computed({
+  get() {
+    if (!output.enabled) {
+      return "off";
+    }
+    return output.type;
+  },
+  set(value) {
+    if (value === "off") {
+      output.enabled = false;
+      return;
+    } else {
+      output.enabled = true;
+      output.type = value;
+    }
+  },
+});
 
 function getStatusMessage(
   connection: ConnectionStatus,

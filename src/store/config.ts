@@ -12,6 +12,7 @@ export const useConfigStore = defineStore("config", () => {
 
   const output = reactive({
     enabled: false,
+    type: "artnet" as const,
     host: "",
     port: 6454,
     net: 0,
