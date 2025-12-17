@@ -225,7 +225,7 @@ const logoVariant = computed(() => {
     return "shock";
   }
 
-  if (status.input.connection === "idle" && isInputLost(dmx.lastUpdate)) {
+  if (status.input.connection === "connected" && isInputLost(dmx.lastUpdate)) {
     return "question";
   }
 
