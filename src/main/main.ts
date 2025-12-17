@@ -50,7 +50,6 @@ app.whenReady().then(async () => {
     );
 
     controller.on("store:emit", (storeId, statePatch) => {
-      consola.debug("Sending store:emit", storeId);
       mainWindow?.webContents.send("store:emit", {
         storeId,
         statePatch: toRawDeep(statePatch),

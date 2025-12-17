@@ -12,7 +12,6 @@ const pinia = createPinia();
 
 const piniaRemoteSync = createPiniaRemoteSync();
 piniaRemoteSync.subscribe((store) => {
-  logger.debug("Sending renderer:store:emit", store.$id, store.$state);
   window.postMessage(
     {
       type: "renderer:store:emit",

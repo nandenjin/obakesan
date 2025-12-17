@@ -7,7 +7,6 @@ window.addEventListener("message", (event) => {
   logger.debug("Received message", event);
   switch (event.data.type) {
     case "renderer:store:emit": {
-      logger.debug("Sending store:emit");
       ipcRenderer.send("store:emit", {
         storeId: event.data.storeId,
         statePatch: event.data.statePatch,
