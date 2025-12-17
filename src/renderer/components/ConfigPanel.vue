@@ -7,7 +7,7 @@
     >
       <div class="indicator">
         <span class="interface-part">
-          <span>
+          <span class="label" :class="{ 'is-valid': isInputValid }">
             {{ config.input.host }}:{{ config.input.port }}
             {{ config.input.net }}/{{ config.input.subnet }}/{{
               config.input.universe
@@ -30,7 +30,11 @@
         </span>
         <span class="arrow"></span>
         <span class="interface-part">
-          <span v-if="config.output.enabled">
+          <span
+            v-if="config.output.enabled"
+            class="label"
+            :class="{ 'is-valid': isOutputValid }"
+          >
             {{ config.output.host }}:{{ config.output.port }}
             {{ config.output.net }}/{{ config.output.subnet }}/{{
               config.output.universe
@@ -253,6 +257,13 @@ const statusIconOutput = computed(() => {
   }
 });
 
+const isInputValid = computed(
+  () => !status.input.reasons.includes(StatusReason.INVALID_CONFIG)
+);
+const isOutputValid = computed(
+  () => !status.output.reasons.includes(StatusReason.INVALID_CONFIG)
+);
+
 function getStatusMessage(
   connection: ConnectionStatus,
   reasons: StatusReason[],
@@ -384,6 +395,12 @@ onUnmounted(() => {
     .interface-part {
       display: flex;
       gap: 10px;
+
+      .label {
+        &:not(.is-valid) {
+          text-decoration: line-through;
+        }
+      }
     }
   }
 
