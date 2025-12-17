@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.0.4](https://github.com/nandenjin/obakesan/compare/v0.0.3...v0.0.4) (2025-12-17)
+
+
+### Features
+
+* Add auto updater ([f208867](https://github.com/nandenjin/obakesan/commit/f208867d504ef1aa1f27fa2fc0daca8f0468315f))
+* Add fps monitor for input ([c8fb085](https://github.com/nandenjin/obakesan/commit/c8fb0854d5b2585454b036dbfa52966a0a5f520c))
+* Implement FTDI USB output ([4aa5d2e](https://github.com/nandenjin/obakesan/commit/4aa5d2e1dc219516eb503224d31c4998be432a6d))
+
+
+### Bug Fixes
+
+* Logo should indicate lost status ([789efcd](https://github.com/nandenjin/obakesan/commit/789efcd275972ee1edd5048ad4f5135caac6be4f))
+
+
+### Miscellaneous Chores
+
+* release 0.0.4 ([0afc4ca](https://github.com/nandenjin/obakesan/commit/0afc4ca346ce37128ba380e719bc020d07e7ba89))
+
 ## [0.0.3](https://github.com/nandenjin/obakesan/compare/v0.0.2...v0.0.3) (2025-12-17)
 
 
