@@ -15,7 +15,7 @@ module.exports = {
   asarUnpack: ["resources/**"],
   // afterSign: 'build/notarize.js',
   win: {
-    target: ["zip"],
+    target: ["zip", "nsis"],
     artifactName: "obakesan-${version}-win.${ext}",
   },
   mac: {
