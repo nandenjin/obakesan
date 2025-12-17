@@ -6,11 +6,13 @@
       @click="isOpen = !isOpen"
     >
       <div class="indicator">
-        <span>
-          {{ config.input.host }}:{{ config.input.port }}
-          {{ config.input.net }}/{{ config.input.subnet }}/{{
-            config.input.universe
-          }}
+        <span class="interface-part">
+          <span>
+            {{ config.input.host }}:{{ config.input.port }}
+            {{ config.input.net }}/{{ config.input.subnet }}/{{
+              config.input.universe
+            }}
+          </span>
           <HoverTooltip
             :content="
               getStatusMessage(
@@ -27,7 +29,26 @@
           </HoverTooltip>
         </span>
         <span class="arrow"></span>
-        <span>No output</span>
+        <span class="interface-part">
+          <span v-if="config.output.enabled">
+            {{ config.output.host }}:{{ config.output.port }}
+            {{ config.output.net }}/{{ config.output.subnet }}/{{
+              config.output.universe
+            }}
+            @ {{ config.output.fps }}fps
+          </span>
+          <span v-else>(Monitor only)</span>
+          <HoverTooltip
+            :content="
+              getStatusMessage(status.output.connection, status.output.reasons)
+            "
+          >
+            <StatusBadge
+              :icon="statusIconOutput"
+              :reasons="status.output.reasons"
+            />
+          </HoverTooltip>
+        </span>
       </div>
       <ProductLogo class="logo" :variant="logoVariant" />
     </div>
@@ -81,8 +102,67 @@
       </div>
 
       <div class="editor-group">
-        <div class="title"><span>Output</span></div>
-        <div class="content"></div>
+        <div class="title">
+          <label>
+            <input v-model="output.enabled" type="checkbox" />
+            <span>Output</span>
+          </label>
+        </div>
+        <div class="content">
+          <div class="input-group">
+            <LabelledInput
+              v-model="output.host"
+              label="Host"
+              type="text"
+              size="15"
+              placeholder="192.168.1.10"
+            />
+            <LabelledInput
+              v-model="output.port"
+              label="Port"
+              type="number"
+              :min="1"
+              :max="65535"
+              :step="1"
+            />
+          </div>
+          <div class="input-group">
+            <LabelledInput
+              v-model="output.net"
+              label="Net"
+              type="number"
+              :min="0"
+              :max="16"
+              :step="1"
+            />
+            <LabelledInput
+              v-model="output.subnet"
+              label="Subnet"
+              type="number"
+              :min="0"
+              :max="16"
+              :step="1"
+            />
+            <LabelledInput
+              v-model="output.universe"
+              label="Universe"
+              type="number"
+              :min="0"
+              :max="16"
+              :step="1"
+            />
+          </div>
+          <div class="input-group">
+            <LabelledInput
+              v-model="output.fps"
+              label="FPS"
+              type="number"
+              :min="1"
+              :max="44"
+              :step="1"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </nav>
@@ -116,13 +196,27 @@ const input = reactive({
   universe: 0,
 });
 
+const output = reactive({
+  enabled: false,
+  host: "",
+  port: 0,
+  net: 0,
+  subnet: 0,
+  universe: 0,
+  fps: 0,
+});
+
 const logoVariant = computed(() => {
-  if (status.input.connection === "error") {
+  const isError =
+    status.input.connection === "error" || status.output.connection === "error";
+  if (isError) {
     return "shock";
   }
-  if (isInputLost(dmx.lastUpdate)) {
+
+  if (status.input.connection === "idle" && isInputLost(dmx.lastUpdate)) {
     return "question";
   }
+
   return "default";
 });
 
@@ -137,8 +231,25 @@ const statusIconInput = computed(() => {
         return "in-progress";
       }
       return "connected";
+    case "idle":
+      return "default";
     default:
       return undefined;
+  }
+});
+
+const statusIconOutput = computed(() => {
+  switch (status.output.connection) {
+    case "error":
+      return "failed";
+    case "connecting":
+      return "in-progress";
+    case "connected":
+      return "connected";
+    case "idle":
+      return "default";
+    default:
+      return "default";
   }
 });
 
@@ -169,6 +280,12 @@ function getStatusMessage(
           return "Unknown error";
       }
     }
+    case "idle": {
+      if (reasons.includes(StatusReason.INVALID_CONFIG)) {
+        return "Invalid configuration";
+      }
+      return null;
+    }
     default:
       return null;
   }
@@ -184,6 +301,14 @@ function setConfig() {
   config.input.net = input.net;
   config.input.subnet = input.subnet;
   config.input.universe = input.universe;
+
+  config.output.enabled = output.enabled;
+  config.output.host = output.host;
+  config.output.port = output.port;
+  config.output.net = output.net;
+  config.output.subnet = output.subnet;
+  config.output.universe = output.universe;
+  config.output.fps = output.fps;
 }
 
 watch(
@@ -196,13 +321,27 @@ watch(
 );
 
 watch(
-  () => config.input,
+  config.input,
   (newInput) => {
     input.host = newInput.host;
     input.port = newInput.port;
     input.net = newInput.net;
     input.subnet = newInput.subnet;
     input.universe = newInput.universe;
+  },
+  { immediate: true }
+);
+
+watch(
+  config.output,
+  (newOutput) => {
+    output.enabled = newOutput.enabled;
+    output.host = newOutput.host;
+    output.port = newOutput.port;
+    output.net = newOutput.net;
+    output.subnet = newOutput.subnet;
+    output.universe = newOutput.universe;
+    output.fps = newOutput.fps;
   },
   { immediate: true }
 );
@@ -240,7 +379,12 @@ onUnmounted(() => {
     display: grid;
     grid-template-columns: auto 1fr auto;
     align-content: center;
-    gap: 50px;
+    gap: 30px;
+
+    .interface-part {
+      display: flex;
+      gap: 10px;
+    }
   }
 
   .arrow {
@@ -304,9 +448,6 @@ onUnmounted(() => {
 .input-group {
   display: flex;
   gap: 5px;
-  &:has(+ .input-group) {
-    margin-bottom: 5px;
-  }
 }
 
 .editor-group {
@@ -320,6 +461,12 @@ onUnmounted(() => {
     justify-content: center;
     background-color: rgba(255, 255, 255, 0.2);
     padding: 10px;
+  }
+
+  & > .content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
 }
 </style>

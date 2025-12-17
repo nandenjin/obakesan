@@ -16,13 +16,16 @@
           d="M14.399,50.635l4.923,-6.306l18.186,14.198l35.766,-32.422l5.373,5.927l-40.755,36.944l-23.494,-18.342Z"
         />
       </g>
+      <g v-else-if="props.icon === 'default'" class="default">
+        <circle cx="47" cy="47" r="10" />
+      </g>
     </svg>
   </span>
 </template>
 
 <script lang="ts" setup>
 const props = defineProps<{
-  icon?: "failed" | "in-progress" | "connected";
+  icon?: "failed" | "in-progress" | "connected" | "default";
 }>();
 </script>
 
@@ -59,6 +62,14 @@ const props = defineProps<{
 
     .logo {
       fill: #4f4;
+    }
+  }
+
+  &.default {
+    border-color: #888;
+
+    .logo {
+      fill: #888;
     }
   }
 }

@@ -21,7 +21,7 @@ export interface ArtNetReceiverOptions {
 }
 
 export interface ArtNetReceiverConnectOptions extends ArtNetReceiverOptions {
-  host?: string;
+  bindHost?: string;
   port?: number;
 }
 
@@ -47,8 +47,13 @@ export class ArtNetReceiver extends EventEmitter {
   private socketKey: string | null = null;
   private isConnected: boolean = false;
 
-  constructor() {
+  constructor(options?: ArtNetReceiverOptions) {
     super();
+    if (options) {
+      this.net = options.net ?? 0;
+      this.subnet = options.subnet ?? 0;
+      this.universe = options.universe ?? 0;
+    }
   }
 
   /**
@@ -57,14 +62,14 @@ export class ArtNetReceiver extends EventEmitter {
    */
   async connect(options: ArtNetReceiverConnectOptions): Promise<void> {
     if (this.isConnected) {
-      this.destroy(); // Unregister first
+      this.close(); // Unregister first
     }
 
-    this.net = options.net ?? 0;
-    this.subnet = options.subnet ?? 0;
-    this.universe = options.universe ?? 0;
+    this.net = options.net ?? this.net ?? 0;
+    this.subnet = options.subnet ?? this.subnet ?? 0;
+    this.universe = options.universe ?? this.universe ?? 0;
 
-    const host = options.host ?? "0.0.0.0";
+    const host = options.bindHost ?? "0.0.0.0";
     const port = options.port ?? 6454;
 
     try {
@@ -117,7 +122,7 @@ export class ArtNetReceiver extends EventEmitter {
     return super.off(eventName, listener);
   }
 
-  destroy() {
+  close() {
     if (this.socketKey && this.isConnected) {
       ArtNetDevice.getInstance().unregisterReceiver(this.socketKey, this);
       this.isConnected = false;

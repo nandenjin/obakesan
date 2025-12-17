@@ -5,13 +5,24 @@ import { EventEmitter } from "node:events";
 import { createPiniaRemoteSync, PiniaRemoteSync } from "../lib/PiniaRemoteSync";
 import { SS } from "../store";
 import { createApp, watch } from "vue";
+import { DmxFrame } from "../lib/DmxFrame";
 import {
   ArtNetReceiver,
   ArtNetReceiverConnectOptions,
   createArtNetReceiver,
+  ArtNetTransmitter,
+  createArtNetTransmitter,
+  ArtNetTransmitterOptions,
 } from "../lib/artnet";
+import {
+  validateHost,
+  validatePort,
+  validateUniverse,
+} from "../lib/artnet/validation";
 import consola from "consola";
 import { StatusReason, useStatusStore } from "../store/status";
+
+const MAX_FPS = 44;
 
 const logger = consola.withTag("Controller");
 
@@ -31,6 +42,8 @@ export class Controller extends EventEmitter {
   relay: PiniaRemoteSync;
   vue = createApp({});
   receiver: ArtNetReceiver | null = null;
+  transmitter: ArtNetTransmitter | null = null;
+  transmitInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     super();
@@ -51,6 +64,7 @@ export class Controller extends EventEmitter {
     this.statusStore = statusStore;
 
     this.setupReceiver();
+    this.setupTransmitter();
   }
 
   setupReceiver() {
@@ -60,11 +74,22 @@ export class Controller extends EventEmitter {
         logger.log("Config store changed", host, port, net, subnet, universe);
         if (this.receiver) {
           logger.log("Shutting down previous receiver...");
-          this.receiver.destroy();
+          this.receiver.close();
+        }
+
+        if (
+          !validateHost(host) ||
+          !validatePort(port) ||
+          !validateUniverse(net, subnet, universe)
+        ) {
+          logger.log("Invalid receiver config");
+          this.statusStore.input.connection = "idle";
+          this.statusStore.input.reasons = [StatusReason.INVALID_CONFIG];
+          return;
         }
 
         const options: ArtNetReceiverConnectOptions = {
-          host,
+          bindHost: host,
           port,
           net,
           subnet,
@@ -96,6 +121,78 @@ export class Controller extends EventEmitter {
           logger.error(error);
           this.statusStore.input.connection = "error";
           this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
+        }
+      },
+      {
+        immediate: true,
+      }
+    );
+  }
+
+  setupTransmitter() {
+    watch(
+      this.configStore.output,
+      async ({ enabled, host, port, net, subnet, universe, fps }) => {
+        // Stop existing interval
+        if (this.transmitInterval) {
+          logger.debug("Stopping transmitter interval...");
+          clearInterval(this.transmitInterval);
+          this.transmitInterval = null;
+        }
+
+        // Close existing transmitter
+        if (this.transmitter) {
+          logger.debug("Closing transmitter...");
+          this.transmitter.close();
+          this.transmitter = null;
+        }
+
+        if (!enabled) {
+          logger.debug("Transmitter disabled");
+          this.statusStore.output.connection = "idle";
+          this.statusStore.output.reasons = [StatusReason.DISABLED];
+          return;
+        }
+
+        if (
+          !validateHost(host) ||
+          !validatePort(port) ||
+          !validateUniverse(net, subnet, universe)
+        ) {
+          logger.debug("Transmitter invalid config");
+          this.statusStore.output.connection = "idle";
+          this.statusStore.output.reasons = [StatusReason.INVALID_CONFIG];
+          return;
+        }
+
+        const options: ArtNetTransmitterOptions = {
+          host,
+          port,
+          net,
+          subnet,
+          universe,
+        };
+
+        logger.debug("Starting transmitter...", options, `FPS: ${fps}`);
+        this.statusStore.output.connection = "connecting";
+        this.statusStore.output.reasons = [];
+
+        try {
+          this.transmitter = await createArtNetTransmitter(options);
+          this.statusStore.output.connection = "connected";
+
+          const intervalMs = 1000 / Math.max(1, Math.min(fps, MAX_FPS));
+
+          this.transmitInterval = setInterval(() => {
+            if (this.transmitter) {
+              const frame = new DmxFrame().set(this.dmxStore.buffer);
+              this.transmitter.send(frame);
+            }
+          }, intervalMs);
+        } catch (error) {
+          logger.error("Failed to start transmitter", error);
+          this.statusStore.output.connection = "error";
+          this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
         }
       },
       {

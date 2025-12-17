@@ -10,7 +10,18 @@ export const useConfigStore = defineStore("config", () => {
     universe: 0,
   });
 
+  const output = reactive({
+    enabled: false,
+    host: "",
+    port: 6454,
+    net: 0,
+    subnet: 0,
+    universe: 0,
+    fps: 30,
+  });
+
   return {
     input,
+    output,
   };
 });

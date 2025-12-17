@@ -95,7 +95,6 @@ export class ArtNetDevice extends EventEmitter {
   registerReceiver(socketKey: string, receiver: ArtNetReceiver) {
     let set = this.receivers.get(socketKey);
     if (!set) {
-      // Should not happen if bind called first, but handling just in case
       set = new Set();
       this.receivers.set(socketKey, set);
     }
@@ -109,8 +108,6 @@ export class ArtNetDevice extends EventEmitter {
     const set = this.receivers.get(socketKey);
     if (set) {
       set.delete(receiver);
-      // Optional: if set is empty, close socket?
-      // For now, keeping socket open as user might reconnect.
     }
   }
 
@@ -210,6 +207,25 @@ export class ArtNetDevice extends EventEmitter {
 
     socket.send(reply, port, rinfo.address, (err) => {
       if (err) console.error("Error sending PollReply:", err);
+    });
+  }
+  /**
+   * Send a message to a specific host and port using a managed socket.
+   */
+  send(socketKey: string, msg: Buffer, host: string, port: number) {
+    const socket = this.sockets.get(socketKey);
+    if (!socket) {
+      console.warn(`[ArtNetDevice] Socket not found for key: ${socketKey}`);
+      return;
+    }
+    socket.send(msg, port, host, (err) => {
+      if (err) {
+        console.error(
+          `[ArtNetDevice] Error sending packet to ${host}:${port}`,
+          err
+        );
+        this.emit("error", err);
+      }
     });
   }
 }

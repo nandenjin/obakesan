@@ -51,7 +51,7 @@ body {
 .app {
   display: grid;
   grid-template-rows: auto 1fr;
-  gap: 15px;
+  gap: 5px;
   width: 100vw;
   height: 100vh;
 
