@@ -12,6 +12,9 @@
             {{ config.input.net }}/{{ config.input.subnet }}/{{
               config.input.universe
             }}
+            <template v-if="!isInputLost">
+              @ {{ Math.round(dmx.fps) }}fps
+            </template>
           </span>
           <HoverTooltip
             :content="
@@ -254,7 +257,7 @@ const logoVariant = computed(() => {
     return "shock";
   }
 
-  if (status.input.connection === "connected" && isInputLost(dmx.lastUpdate)) {
+  if (status.input.connection === "connected" && isInputLost.value) {
     return "question";
   }
 
@@ -268,7 +271,7 @@ const statusIconInput = computed(() => {
     case "connecting":
       return "in-progress";
     case "connected":
-      if (isInputLost(dmx.lastUpdate)) {
+      if (isInputLost.value) {
         return "in-progress";
       }
       return "connected";
@@ -341,7 +344,7 @@ function getStatusMessage(
     case "connecting":
       return "Connecting...";
     case "connected":
-      if (typeof lastUpdate === "number" && isInputLost(lastUpdate)) {
+      if (typeof lastUpdate === "number" && isInputLost.value) {
         return "Connected but no data received";
       }
       return "Connected and transferring data";
@@ -354,9 +357,7 @@ function getStatusMessage(
   }
 }
 
-function isInputLost(lastUpdate: number) {
-  return lastUpdate < now.value - 1000;
-}
+const isInputLost = computed(() => dmx.lastUpdate < now.value - 1000);
 
 function setConfig() {
   config.input.host = input.host;

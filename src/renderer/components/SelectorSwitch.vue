@@ -30,6 +30,7 @@ const componentId = getCurrentInstance()?.uid || "noId";
 <style scoped>
 .selector-switch {
   display: inline-flex;
+  gap: 2px;
 }
 
 label {

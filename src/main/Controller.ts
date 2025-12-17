@@ -122,7 +122,7 @@ export class Controller extends EventEmitter {
             for (let i = 0; i < 512; i++) {
               this.dmxStore.buffer[i] = receiver.buffer.data[i] ?? 0;
             }
-            this.dmxStore.lastUpdate = Date.now();
+            this.dmxStore.tick();
           });
 
           receiver.on("error", (error) => {
