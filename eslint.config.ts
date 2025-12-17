@@ -8,12 +8,10 @@ import eslint from "@eslint/js";
 
 const config = typescriptEslint.config([
   { ignores: ["*.d.ts", "**/coverage", "**/dist", "**/out"] },
+  eslint.configs.recommended,
+  ...typescriptEslint.configs.recommended,
+  ...pluginVue.configs["flat/recommended"],
   {
-    extends: [
-      eslint.configs.recommended,
-      ...typescriptEslint.configs.recommended,
-      ...pluginVue.configs["flat/recommended"],
-    ],
     languageOptions: {
       globals: {
         ...globals.browser,
