@@ -11,7 +11,10 @@
     "build:mac": "npm run build && dotenvx run -- electron-builder --mac --universal --config electron-builder.config.js --publish never",
     "build:linux": "npm run build && electron-builder --linux --config electron-builder.config.js --publish never",
     "lint": "eslint .",
-    "lintfix": "eslint . --fix"
+    "lintfix": "eslint . --fix",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "keywords": [],
   "author": "Kazumi Inada <hello@nandenjin.com>",
@@ -39,6 +42,7 @@
     "globals": "16.5.0",
     "jiti": "2.6.1",
     "typescript-eslint": "8.49.0",
+    "vitepress": "2.0.0-alpha.15",
     "vue-tsc": "3.1.8"
   }
 }

@@ -1,0 +1,14 @@
+/* .vitepress/theme/custom.css */
+:root {
+  --vp-c-brand-1: #08f;
+  --vp-c-brand-2: #0af;
+  --vp-c-brand-3: #08f;
+}
+
+/* Show larger image in hero */
+.VPHero {
+  .image-src {
+    max-width: unset;
+    max-height: unset;
+  }
+}
