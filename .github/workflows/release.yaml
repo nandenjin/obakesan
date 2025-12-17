@@ -53,9 +53,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Decode and setup certificate for mac
+        if: ${{ matrix.os == 'macos-latest' }}
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          APPLE_API_KEY: ${{ secrets.APPLE_APP_STORE_CONNECT_API_KEY }}
+        run: |
+          WORKSPACE_DIR=$(pwd)
+          echo "$CSC_LINK" | base64 --decode > $WORKSPACE_DIR/certificate.p12
+          echo "CSC_LINK=$WORKSPACE_DIR/certificate.p12" >> $GITHUB_ENV
+          echo "$APPLE_API_KEY" | base64 --decode > $WORKSPACE_DIR/AuthKey.p8
+          echo "APPLE_API_KEY=$WORKSPACE_DIR/AuthKey.p8" >> $GITHUB_ENV
+
       - name: Build and Package
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENABLE_APPLE_NOTARIZATION: ${{ matrix.os == 'macos-latest' }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_API_KEY: ${{ env.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_APP_STORE_CONNECT_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_APP_STORE_CONNECT_ISSUER_ID }}
         run: npm run ${{ matrix.script }}
 
       - name: Upload Release Assets
