@@ -89,5 +89,6 @@ jobs:
             dist/*.snap
             dist/*.deb
             dist/*.rpm
+            dist/latest-*.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

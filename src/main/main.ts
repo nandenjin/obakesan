@@ -6,6 +6,17 @@ import consola from "consola";
 import { watch } from "vue";
 import { toRawDeep } from "../lib/reactive";
 
+import electronUpdater, { type AppUpdater } from "electron-updater";
+
+/**
+ * Get auto updater instance from electron-updater
+ * @see https://www.electron.build/auto-update
+ */
+export function getAutoUpdater(): AppUpdater {
+  const { autoUpdater } = electronUpdater;
+  return autoUpdater;
+}
+
 const pathForEntry = join(__dirname, "../renderer/index.html");
 
 let mainWindow: BrowserWindow | null;
@@ -62,6 +73,9 @@ app.whenReady().then(async () => {
     });
 
     mainWindow!.show();
+
+    // Check for updates after the app is ready
+    getAutoUpdater().checkForUpdatesAndNotify();
   });
 
   ipcMain.on("store:emit", (_, { storeId, statePatch }) => {
