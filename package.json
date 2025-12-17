@@ -1,7 +1,7 @@
 {
   "name": "@nandenjin/obakesan",
   "version": "0.0.3",
-  "description": "",
+  "description": "A monitor or converter app for stage lighting system",
   "main": "out/main/main.js",
   "scripts": {
     "dev": "electron-vite dev",
