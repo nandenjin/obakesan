@@ -22,8 +22,6 @@ import {
 import consola from "consola";
 import { StatusReason, useStatusStore } from "../store/status";
 
-const MAX_FPS = 44;
-
 const logger = consola.withTag("Controller");
 
 type ControllerEvent = {
@@ -43,7 +41,6 @@ export class Controller extends EventEmitter {
   vue = createApp({});
   receiver: ArtNetReceiver | null = null;
   transmitter: ArtNetTransmitter | null = null;
-  transmitInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     super();
@@ -65,6 +62,16 @@ export class Controller extends EventEmitter {
 
     this.setupReceiver();
     this.setupTransmitter();
+
+    // Sync DMX buffer to transmitter
+    watch(
+      () => this.dmxStore.lastUpdate,
+      () => {
+        if (this.transmitter) {
+          this.transmitter.buffer.set(this.dmxStore.buffer);
+        }
+      }
+    );
   }
 
   setupReceiver() {
@@ -133,13 +140,6 @@ export class Controller extends EventEmitter {
     watch(
       this.configStore.output,
       async ({ enabled, host, port, net, subnet, universe, fps }) => {
-        // Stop existing interval
-        if (this.transmitInterval) {
-          logger.debug("Stopping transmitter interval...");
-          clearInterval(this.transmitInterval);
-          this.transmitInterval = null;
-        }
-
         // Close existing transmitter
         if (this.transmitter) {
           logger.debug("Closing transmitter...");
@@ -171,6 +171,7 @@ export class Controller extends EventEmitter {
           net,
           subnet,
           universe,
+          fps,
         };
 
         logger.debug("Starting transmitter...", options, `FPS: ${fps}`);
@@ -181,14 +182,8 @@ export class Controller extends EventEmitter {
           this.transmitter = await createArtNetTransmitter(options);
           this.statusStore.output.connection = "connected";
 
-          const intervalMs = 1000 / Math.max(1, Math.min(fps, MAX_FPS));
-
-          this.transmitInterval = setInterval(() => {
-            if (this.transmitter) {
-              const frame = new DmxFrame().set(this.dmxStore.buffer);
-              this.transmitter.send(frame);
-            }
-          }, intervalMs);
+          // Sync buffer immediately
+          this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
         } catch (error) {
           logger.error("Failed to start transmitter", error);
           this.statusStore.output.connection = "error";

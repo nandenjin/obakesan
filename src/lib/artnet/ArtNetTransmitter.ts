@@ -34,6 +34,12 @@ export interface ArtNetTransmitterOptions {
    * Local interface to bind to
    */
   bindHost?: string;
+
+  /**
+   * Transmission FPS (Frames Per Second)
+   * @default 44
+   */
+  fps?: number;
 }
 
 /**
@@ -55,6 +61,8 @@ export class ArtNetTransmitter {
 
   private socketKey: string | null = null;
   private isConnected: boolean = false;
+  private interval: NodeJS.Timeout | null = null;
+  private fps: number = 44;
 
   constructor(options?: ArtNetTransmitterOptions) {
     if (options) {
@@ -68,11 +76,43 @@ export class ArtNetTransmitter {
     this.universe = options.universe ?? this.universe;
     this.host = options.host ?? this.host;
     this.port = options.port ?? this.port;
+    if (options.fps !== undefined) {
+      this.setFPS(options.fps);
+    }
   }
 
-  /**
-   * Initialize the socket connection
-   */
+  setFPS(fps: number) {
+    this.fps = fps;
+    if (this.interval) {
+      this.startTimer();
+    }
+  }
+
+  getFPS(): number {
+    return this.fps;
+  }
+
+  private startTimer() {
+    this.stopTimer();
+    if (this.fps > 0) {
+      const intervalMs = 1000 / this.fps;
+      this.interval = setInterval(() => {
+        if (this.isConnected) {
+          const packet = this.createBuffer();
+          // Re-using sendPacket() to send current buffer
+          this.sendPacket(packet);
+        }
+      }, intervalMs);
+    }
+  }
+
+  private stopTimer() {
+    if (this.interval) {
+      clearInterval(this.interval);
+      this.interval = null;
+    }
+  }
+
   /**
    * Initialize the socket connection
    */
@@ -83,6 +123,7 @@ export class ArtNetTransmitter {
     const device = ArtNetDevice.getInstance();
     this.socketKey = await device.bind(bindHost, bindPort);
     this.isConnected = true;
+    this.startTimer();
   }
 
   /**
@@ -90,18 +131,16 @@ export class ArtNetTransmitter {
    * @param frame Optional frame to update buffer with before sending
    */
   send(frame?: DmxFrame) {
-    if (!this.isConnected || !this.socketKey) {
-      throw new Error("Transmitter is not connected");
-    }
-
     if (frame) {
       this.buffer.copy(frame);
     }
+  }
 
-    const packet = this.createBuffer();
+  private sendPacket(buffer: Buffer) {
+    if (!this.isConnected || !this.socketKey) return;
     ArtNetDevice.getInstance().send(
       this.socketKey,
-      packet,
+      buffer,
       this.host,
       this.port
     );
@@ -140,6 +179,7 @@ export class ArtNetTransmitter {
   }
 
   close() {
+    this.stopTimer();
     this.socketKey = null;
     this.isConnected = false;
   }
