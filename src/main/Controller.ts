@@ -19,6 +19,13 @@ import {
   validatePort,
   validateUniverse,
 } from "../lib/artnet/validation";
+import {
+  createFtdiTransmitter,
+  FtdiTransmitter,
+  FtdiTransmitterOptions,
+  getFtdiDeviceInfo,
+  listFtdiDevices,
+} from "../lib/FtdiTransmitter";
 import consola from "consola";
 import { StatusReason, useStatusStore } from "../store/status";
 
@@ -40,7 +47,7 @@ export class Controller extends EventEmitter {
   relay: PiniaRemoteSync;
   vue = createApp({});
   receiver: ArtNetReceiver | null = null;
-  transmitter: ArtNetTransmitter | null = null;
+  transmitter: ArtNetTransmitter | FtdiTransmitter | null = null;
 
   constructor() {
     super();
@@ -62,6 +69,7 @@ export class Controller extends EventEmitter {
 
     this.setupReceiver();
     this.setupTransmitter();
+    this.setupDeviceScanner();
 
     // Sync DMX buffer to transmitter
     watch(
@@ -136,14 +144,41 @@ export class Controller extends EventEmitter {
     );
   }
 
+  setupDeviceScanner() {
+    // Scan for FTDI devices every 3 seconds
+    setInterval(async () => {
+      try {
+        const devices = await listFtdiDevices();
+        this.statusStore.output.ftdiDevices = devices.map((d) => ({
+          serialNumber: d.serial_number || "",
+          description: d.description || "",
+        }));
+      } catch {
+        // Silent error
+      }
+    }, 3000);
+  }
+
   setupTransmitter() {
     watch(
       this.configStore.output,
-      async ({ enabled, host, port, net, subnet, universe, fps }) => {
+      async ({
+        enabled,
+        type,
+        host,
+        port,
+        net,
+        subnet,
+        universe,
+        fps,
+        deviceSerial,
+      }) => {
+        logger.debug("Updating transmitter config...");
+
         // Close existing transmitter
         if (this.transmitter) {
           logger.debug("Closing transmitter...");
-          this.transmitter.close();
+          await this.transmitter.close();
           this.transmitter = null;
         }
 
@@ -154,40 +189,75 @@ export class Controller extends EventEmitter {
           return;
         }
 
-        if (
-          !validateHost(host) ||
-          !validatePort(port) ||
-          !validateUniverse(net, subnet, universe)
-        ) {
-          logger.debug("Transmitter invalid config");
-          this.statusStore.output.connection = "idle";
-          this.statusStore.output.reasons = [StatusReason.INVALID_CONFIG];
-          return;
-        }
+        if (type === "artnet") {
+          if (
+            !validateHost(host) ||
+            !validatePort(port) ||
+            !validateUniverse(net, subnet, universe)
+          ) {
+            logger.debug("Transmitter invalid config");
+            this.statusStore.output.connection = "idle";
+            this.statusStore.output.reasons = [StatusReason.INVALID_CONFIG];
+            return;
+          }
 
-        const options: ArtNetTransmitterOptions = {
-          host,
-          port,
-          net,
-          subnet,
-          universe,
-          fps,
-        };
+          const options: ArtNetTransmitterOptions = {
+            host,
+            port,
+            net,
+            subnet,
+            universe,
+            fps,
+          };
 
-        logger.debug("Starting transmitter...", options, `FPS: ${fps}`);
-        this.statusStore.output.connection = "connecting";
-        this.statusStore.output.reasons = [];
+          logger.debug(
+            "Starting ArtNet transmitter...",
+            options,
+            `FPS: ${fps}`
+          );
+          this.statusStore.output.connection = "connecting";
+          this.statusStore.output.reasons = [];
 
-        try {
-          this.transmitter = await createArtNetTransmitter(options);
-          this.statusStore.output.connection = "connected";
+          try {
+            this.transmitter = await createArtNetTransmitter(options);
+            this.statusStore.output.connection = "connected";
 
-          // Sync buffer immediately
-          this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
-        } catch (error) {
-          logger.error("Failed to start transmitter", error);
-          this.statusStore.output.connection = "error";
-          this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
+            // Sync buffer immediately
+            this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
+          } catch (error) {
+            logger.error("Failed to start transmitter", error);
+            this.statusStore.output.connection = "error";
+            this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
+          }
+        } else if (type === "ftdi") {
+          const deviceInfo = await getFtdiDeviceInfo(deviceSerial);
+          if (!deviceInfo) {
+            logger.debug("Transmitter invalid config");
+            this.statusStore.output.connection = "idle";
+            this.statusStore.output.reasons = [StatusReason.DEVICE_UNAVAILABLE];
+            return;
+          }
+
+          const options: FtdiTransmitterOptions = {
+            fps,
+            deviceInfo,
+          };
+
+          logger.debug("Starting FTDI transmitter...", options);
+          this.statusStore.output.connection = "connecting";
+          this.statusStore.output.reasons = [];
+
+          try {
+            this.transmitter = await createFtdiTransmitter(options);
+            this.statusStore.output.connection = "connected";
+
+            // Sync buffer immediately
+            this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
+          } catch (error) {
+            logger.error("Failed to start FTDI transmitter", error);
+            this.statusStore.output.connection = "error";
+            this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
+          }
         }
       },
       {

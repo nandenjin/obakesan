@@ -30,17 +30,26 @@
         </span>
         <span class="arrow"></span>
         <span class="interface-part">
-          <span
-            v-if="config.output.enabled"
-            class="label"
-            :class="{ 'is-valid': isOutputValid }"
-          >
-            {{ config.output.host }}:{{ config.output.port }}
-            {{ config.output.net }}/{{ config.output.subnet }}/{{
-              config.output.universe
-            }}
-            @ {{ config.output.fps }}fps
-          </span>
+          <template v-if="config.output.enabled">
+            <span
+              v-if="config.output.type === 'artnet'"
+              class="label"
+              :class="{ 'is-valid': isOutputValid }"
+            >
+              {{ config.output.host }}:{{ config.output.port }}
+              {{ config.output.net }}/{{ config.output.subnet }}/{{
+                config.output.universe
+              }}
+              @ {{ config.output.fps }}fps
+            </span>
+            <span
+              v-else-if="config.output.type === 'ftdi'"
+              class="label"
+              :class="{ 'is-valid': isOutputValid }"
+            >
+              FTDI USB DMX @ {{ config.output.fps }}fps
+            </span>
+          </template>
           <span v-else>(Monitor only)</span>
           <HoverTooltip
             :content="
@@ -116,10 +125,29 @@
               :options="[
                 { label: 'Off', value: 'off' },
                 { label: 'Art-Net', value: 'artnet' },
+                { label: 'FTDI USB', value: 'ftdi' },
               ]"
             />
           </div>
-          <div class="input-group">
+          <div v-if="output.type === 'ftdi'" class="input-group">
+            <select
+              v-model="output.deviceSerial"
+              class="select-input"
+              :disabled="status.output.ftdiDevices.length === 0"
+            >
+              <option v-if="status.output.ftdiDevices.length === 0" value="">
+                (No FTDI devices found)
+              </option>
+              <option
+                v-for="device in status.output.ftdiDevices"
+                :key="device.serialNumber"
+                :value="device.serialNumber"
+              >
+                {{ device.description }} ({{ device.serialNumber }})
+              </option>
+            </select>
+          </div>
+          <div v-if="output.type === 'artnet'" class="input-group">
             <LabelledInput
               v-model="output.host"
               label="Host"
@@ -136,7 +164,7 @@
               :step="1"
             />
           </div>
-          <div class="input-group">
+          <div v-if="output.type === 'artnet'" class="input-group">
             <LabelledInput
               v-model="output.net"
               label="Net"
@@ -216,6 +244,7 @@ const output = reactive<typeof config.output>({
   subnet: 0,
   universe: 0,
   fps: 0,
+  deviceSerial: "",
 });
 
 const logoVariant = computed(() => {
@@ -269,7 +298,9 @@ const isInputValid = computed(
   () => !status.input.reasons.includes(StatusReason.INVALID_CONFIG)
 );
 const isOutputValid = computed(
-  () => !status.output.reasons.includes(StatusReason.INVALID_CONFIG)
+  () =>
+    !status.output.reasons.includes(StatusReason.INVALID_CONFIG) &&
+    !status.output.reasons.includes(StatusReason.DEVICE_UNAVAILABLE)
 );
 
 const outputSelection = computed({
@@ -285,7 +316,7 @@ const outputSelection = computed({
       return;
     } else {
       output.enabled = true;
-      output.type = value;
+      output.type = value as "artnet" | "ftdi";
     }
   },
 });
@@ -295,6 +326,17 @@ function getStatusMessage(
   reasons: StatusReason[],
   lastUpdate?: number
 ) {
+  for (const reason of reasons) {
+    switch (reason) {
+      case StatusReason.INVALID_CONFIG:
+        return "Invalid configuration";
+      case StatusReason.FAILED_TO_CONNECT:
+        return "Failed to connect";
+      case StatusReason.DEVICE_UNAVAILABLE:
+        return "Device unavailable";
+    }
+  }
+
   switch (connection) {
     case "connecting":
       return "Connecting...";
@@ -303,26 +345,10 @@ function getStatusMessage(
         return "Connected but no data received";
       }
       return "Connected and transferring data";
-    case "error": {
-      if (reasons.length === 0) {
-        return null;
-      }
-
-      const code = reasons[0];
-
-      switch (code) {
-        case StatusReason.FAILED_TO_CONNECT:
-          return "Failed to connect";
-        default:
-          return "Unknown error";
-      }
-    }
-    case "idle": {
-      if (reasons.includes(StatusReason.INVALID_CONFIG)) {
-        return "Invalid configuration";
-      }
+    case "idle":
       return null;
-    }
+    case "error":
+      return "Unknown error";
     default:
       return null;
   }
@@ -340,12 +366,14 @@ function setConfig() {
   config.input.universe = input.universe;
 
   config.output.enabled = output.enabled;
+  config.output.type = output.type;
   config.output.host = output.host;
   config.output.port = output.port;
   config.output.net = output.net;
   config.output.subnet = output.subnet;
   config.output.universe = output.universe;
   config.output.fps = output.fps;
+  config.output.deviceSerial = output.deviceSerial;
 }
 
 watch(
@@ -379,6 +407,7 @@ watch(
     output.subnet = newOutput.subnet;
     output.universe = newOutput.universe;
     output.fps = newOutput.fps;
+    output.deviceSerial = newOutput.deviceSerial;
   },
   { immediate: true }
 );
@@ -510,6 +539,22 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     gap: 5px;
+  }
+}
+
+.select-input {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 5px;
+  width: 100%;
+  outline: none;
+  font: inherit;
+
+  option {
+    background: #333;
+    color: white;
   }
 }
 </style>

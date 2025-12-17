@@ -12,13 +12,14 @@ export const useConfigStore = defineStore("config", () => {
 
   const output = reactive({
     enabled: false,
-    type: "artnet" as const,
-    host: "",
+    type: "artnet" as "artnet" | "ftdi",
+    host: "127.0.0.1",
     port: 6454,
     net: 0,
     subnet: 0,
     universe: 0,
     fps: 30,
+    deviceSerial: "",
   });
 
   return {
