@@ -16,6 +16,9 @@
         <DmxMonitor class="dmx-monitor" />
       </main>
     </div>
+    <div v-if="configPanelOpen" class="info">
+      <VersionInfo />
+    </div>
   </div>
 </template>
 
@@ -25,6 +28,7 @@ import ConfigPanel from "./components/ConfigPanel.vue";
 import DmxMonitor from "./components/DmxMonitor.vue";
 import { platform } from "./util";
 import "@fontsource/roboto-mono";
+import VersionInfo from "./components/VersionInfo.vue";
 
 const configPanelOpen = ref<boolean>(false);
 </script>
@@ -96,5 +100,19 @@ header {
 .dmx-monitor {
   transition: opacity 0.15s ease-out;
   margin: 15px;
+}
+
+.info {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  text-align: left;
+  font-size: 11px;
+
+  .version {
+    cursor: pointer;
+  }
 }
 </style>
