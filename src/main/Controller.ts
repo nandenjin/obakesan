@@ -26,10 +26,10 @@ import {
   getFtdiDeviceInfo,
   listFtdiDevices,
 } from "../lib/FtdiTransmitter";
-import consola from "consola";
 import { StatusReason, useStatusStore } from "../store/status";
+import { logger as baseLogger } from "./lib/logger";
 
-const logger = consola.withTag("Controller");
+const logger = baseLogger.withTag("Controller");
 
 type ControllerEvent = {
   "store:emit": <K extends keyof SS>(
@@ -92,9 +92,9 @@ export class Controller extends EventEmitter {
 
   private async updateReceiver(config: ConfigStore["input"]) {
     const { host, port, net, subnet, universe } = config;
-    logger.log("Config store changed", host, port, net, subnet, universe);
+    logger.debug("Config store changed", host, port, net, subnet, universe);
     if (this.receiver) {
-      logger.log("Shutting down previous receiver...");
+      logger.debug("Shutting down previous receiver...");
       this.receiver.close();
       this.receiver = null; // Ensure receiver is cleared
     }
@@ -104,7 +104,7 @@ export class Controller extends EventEmitter {
       !validatePort(port) ||
       !validateUniverse(net, subnet, universe)
     ) {
-      logger.log("Invalid receiver config");
+      logger.info("Stopping receiver due to invalid config");
       this.statusStore.input.connection = "idle";
       this.statusStore.input.reasons = [StatusReason.INVALID_CONFIG];
       return;
@@ -123,7 +123,7 @@ export class Controller extends EventEmitter {
       universe,
     };
 
-    logger.log("Starting receiver...", options);
+    logger.debug("Starting receiver...", options);
     try {
       this.statusStore.input.connection = "connecting";
       this.statusStore.input.reasons.length = 0;
@@ -144,10 +144,12 @@ export class Controller extends EventEmitter {
 
       this.receiver = receiver;
       this.statusStore.input.connection = "connected";
+      logger.success("Receiver started", options);
     } catch (error) {
       logger.error(error);
       this.statusStore.input.connection = "error";
       this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
+      logger.fail("Failed to start receiver", options);
     }
   }
 
@@ -185,10 +187,11 @@ export class Controller extends EventEmitter {
       logger.debug("Closing transmitter...");
       await this.transmitter.close();
       this.transmitter = null;
+      logger.success("Previous transmitter is successfully closed");
     }
 
     if (!enabled) {
-      logger.debug("Transmitter disabled");
+      logger.info("Transmitter disabled");
       this.statusStore.output.connection = "idle";
       this.statusStore.output.reasons = [StatusReason.DISABLED];
       return;
@@ -217,7 +220,7 @@ export class Controller extends EventEmitter {
       !validatePort(port) ||
       !validateUniverse(net, subnet, universe)
     ) {
-      logger.debug("Transmitter invalid config");
+      logger.info("ArtNetTransmitter is stopped due to invalid config");
       this.statusStore.output.connection = "idle";
       this.statusStore.output.reasons = [StatusReason.INVALID_CONFIG];
       return;
@@ -240,12 +243,15 @@ export class Controller extends EventEmitter {
       this.transmitter = await createArtNetTransmitter(options);
       this.statusStore.output.connection = "connected";
 
+      logger.success("ArtNetTransmitter started", options, `FPS: ${fps}`);
+
       // Sync buffer immediately
       this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
     } catch (error) {
       logger.error("Failed to start transmitter", error);
       this.statusStore.output.connection = "error";
       this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
+      logger.fail("ArtNetTransmitter failed to start", options, `FPS: ${fps}`);
     }
   }
 
@@ -257,7 +263,7 @@ export class Controller extends EventEmitter {
     const { deviceSerial, fps } = config;
     const deviceInfo = await getFtdiDeviceInfo(deviceSerial);
     if (!deviceInfo) {
-      logger.debug("Transmitter invalid config");
+      logger.info("FTDITransmitter is stopped due to invalid config");
       this.statusStore.output.connection = "idle";
       this.statusStore.output.reasons = [StatusReason.DEVICE_UNAVAILABLE];
       return;
@@ -278,8 +284,13 @@ export class Controller extends EventEmitter {
 
       // Sync buffer immediately
       this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
+      logger.success(
+        "FTDITransmitter is successfully started",
+        options,
+        `FPS: ${fps}`
+      );
     } catch (error) {
-      logger.error("Failed to start FTDI transmitter", error);
+      logger.fail("FTDITransmitter is failed to start", error);
       this.statusStore.output.connection = "error";
       this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
     }

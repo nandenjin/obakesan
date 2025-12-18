@@ -2,11 +2,10 @@ import { app, BrowserWindow, ipcMain, Menu } from "electron";
 import { join } from "path";
 import { installExtension, VUEJS_DEVTOOLS } from "electron-devtools-installer";
 import { Controller } from "./Controller";
-import consola from "consola";
 import { watch } from "vue";
 import { toRawDeep } from "../lib/reactive";
-
 import electronUpdater, { type AppUpdater } from "electron-updater";
+import { logger } from "./lib/logger";
 
 /**
  * Get auto updater instance from electron-updater
@@ -45,7 +44,7 @@ app.whenReady().then(async () => {
   });
 
   mainWindow.on("ready-to-show", () => {
-    consola.debug("Main window is ready");
+    logger.ready("Main window is ready");
 
     controller = new Controller();
     watch(
@@ -68,7 +67,7 @@ app.whenReady().then(async () => {
     });
 
     controller.on("error", (error) => {
-      consola.error(error);
+      logger.error(error);
       mainWindow?.webContents.send("error", error);
     });
 
@@ -79,26 +78,26 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.on("store:emit", (_, { storeId, statePatch }) => {
-    consola.debug("Received store:emit", storeId, statePatch);
+    logger.debug("Received store:emit", storeId, statePatch);
     controller?.emitStoreChange(storeId, statePatch);
   });
 
   if (app.isPackaged) {
-    consola.debug("Loading renderer from dist...");
+    logger.info("Loading renderer from dist...");
     mainWindow.loadFile(pathForEntry);
   } else {
-    consola.debug("Installing extensions...");
+    logger.debug("Installing extensions...");
     const extensions = await installExtension([VUEJS_DEVTOOLS]);
-    consola.debug(
+    logger.info(
       "Installed extensions:",
       extensions.map((ext) => ext.name)
     );
 
     if (process.env["ELECTRON_RENDERER_URL"]) {
-      consola.debug("Loading renderer from dev server...");
+      logger.info("Loading renderer from dev server...");
       mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
     } else {
-      consola.debug("Loading renderer from dist...");
+      logger.info("Loading renderer from dist...");
       mainWindow.loadFile(pathForEntry);
     }
 
