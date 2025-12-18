@@ -95,7 +95,7 @@
             v-if="output.type === 'ftdi'"
             v-model:device-serial="output.deviceSerial"
             v-model:fps="output.fps"
-            :ftdi-devices="status.output.ftdiDevices"
+            :ftdi-devices="status.ftdiDevices"
           />
           <ConfigPanelArtNetOutput
             v-else-if="output.type === 'artnet'"

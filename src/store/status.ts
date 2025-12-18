@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 
 export enum StatusReason {
   FAILED_TO_CONNECT = "failed_to_connect",
@@ -22,18 +22,16 @@ export const useStatusStore = defineStore("status", () => {
   const output = reactive<{
     connection: ConnectionStatus;
     reasons: StatusReason[];
-    ftdiDevices: {
-      serialNumber: string;
-      description: string;
-    }[];
   }>({
     connection: "idle",
     reasons: [],
-    ftdiDevices: [],
   });
+
+  const ftdiDevices = ref<{ serialNumber: string; description: string }[]>([]);
 
   return {
     input,
     output,
+    ftdiDevices,
   };
 });

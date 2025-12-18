@@ -39,6 +39,8 @@ type ControllerEvent = {
   error: (error: Error) => void;
 };
 
+type ConfigStore = ReturnType<typeof useConfigStore>;
+
 export class Controller extends EventEmitter {
   pinia = createPinia();
   configStore: ReturnType<typeof useConfigStore>;
@@ -83,65 +85,70 @@ export class Controller extends EventEmitter {
   }
 
   setupReceiver() {
-    watch(
-      this.configStore.input,
-      async ({ host, port, net, subnet, universe }) => {
-        logger.log("Config store changed", host, port, net, subnet, universe);
-        if (this.receiver) {
-          logger.log("Shutting down previous receiver...");
-          this.receiver.close();
+    watch(this.configStore.input, (config) => this.updateReceiver(config), {
+      immediate: true,
+    });
+  }
+
+  private async updateReceiver(config: ConfigStore["input"]) {
+    const { host, port, net, subnet, universe } = config;
+    logger.log("Config store changed", host, port, net, subnet, universe);
+    if (this.receiver) {
+      logger.log("Shutting down previous receiver...");
+      this.receiver.close();
+      this.receiver = null; // Ensure receiver is cleared
+    }
+
+    if (
+      !validateHost(host) ||
+      !validatePort(port) ||
+      !validateUniverse(net, subnet, universe)
+    ) {
+      logger.log("Invalid receiver config");
+      this.statusStore.input.connection = "idle";
+      this.statusStore.input.reasons = [StatusReason.INVALID_CONFIG];
+      return;
+    }
+
+    await this.connectArtNetReceiver(config);
+  }
+
+  private async connectArtNetReceiver(config: ConfigStore["input"]) {
+    const { host, port, net, subnet, universe } = config;
+    const options: ArtNetReceiverConnectOptions = {
+      bindHost: host,
+      port,
+      net,
+      subnet,
+      universe,
+    };
+
+    logger.log("Starting receiver...", options);
+    try {
+      this.statusStore.input.connection = "connecting";
+      this.statusStore.input.reasons.length = 0;
+
+      const receiver = await createArtNetReceiver(options);
+
+      receiver.on("update", () => {
+        for (let i = 0; i < 512; i++) {
+          this.dmxStore.buffer[i] = receiver.buffer.data[i] ?? 0;
         }
+        this.dmxStore.tick();
+      });
 
-        if (
-          !validateHost(host) ||
-          !validatePort(port) ||
-          !validateUniverse(net, subnet, universe)
-        ) {
-          logger.log("Invalid receiver config");
-          this.statusStore.input.connection = "idle";
-          this.statusStore.input.reasons = [StatusReason.INVALID_CONFIG];
-          return;
-        }
+      receiver.on("error", (error) => {
+        logger.error(error);
+        this.emit("error", error);
+      });
 
-        const options: ArtNetReceiverConnectOptions = {
-          bindHost: host,
-          port,
-          net,
-          subnet,
-          universe,
-        };
-
-        logger.log("Starting receiver...", options);
-        try {
-          this.statusStore.input.connection = "connecting";
-          this.statusStore.input.reasons.length = 0;
-
-          const receiver = await createArtNetReceiver(options);
-
-          receiver.on("update", () => {
-            for (let i = 0; i < 512; i++) {
-              this.dmxStore.buffer[i] = receiver.buffer.data[i] ?? 0;
-            }
-            this.dmxStore.tick();
-          });
-
-          receiver.on("error", (error) => {
-            logger.error(error);
-            this.emit("error", error);
-          });
-
-          this.receiver = receiver;
-          this.statusStore.input.connection = "connected";
-        } catch (error) {
-          logger.error(error);
-          this.statusStore.input.connection = "error";
-          this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
-        }
-      },
-      {
-        immediate: true,
-      }
-    );
+      this.receiver = receiver;
+      this.statusStore.input.connection = "connected";
+    } catch (error) {
+      logger.error(error);
+      this.statusStore.input.connection = "error";
+      this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
+    }
   }
 
   setupDeviceScanner() {
@@ -149,7 +156,7 @@ export class Controller extends EventEmitter {
     setInterval(async () => {
       try {
         const devices = await listFtdiDevices();
-        this.statusStore.output.ftdiDevices = devices.map((d) => ({
+        this.statusStore.ftdiDevices = devices.map((d) => ({
           serialNumber: d.serial_number || "",
           description: d.description || "",
         }));
@@ -160,110 +167,122 @@ export class Controller extends EventEmitter {
   }
 
   setupTransmitter() {
-    watch(
-      this.configStore.output,
-      async ({
-        enabled,
-        type,
-        host,
-        port,
-        net,
-        subnet,
-        universe,
-        fps,
-        deviceSerial,
-      }) => {
-        logger.debug("Updating transmitter config...");
+    watch(this.configStore.output, (config) => this.updateTransmitter(config), {
+      immediate: true,
+    });
+  }
 
-        // Close existing transmitter
-        if (this.transmitter) {
-          logger.debug("Closing transmitter...");
-          await this.transmitter.close();
-          this.transmitter = null;
-        }
+  /**
+   * Update transmitter with given config. Existing transmitter will be closed or reconnected.
+   * @param config
+   */
+  private async updateTransmitter(config: ConfigStore["output"]) {
+    const { enabled, type } = config;
+    logger.debug("Updating transmitter config...");
 
-        if (!enabled) {
-          logger.debug("Transmitter disabled");
-          this.statusStore.output.connection = "idle";
-          this.statusStore.output.reasons = [StatusReason.DISABLED];
-          return;
-        }
+    // Close existing transmitter
+    if (this.transmitter) {
+      logger.debug("Closing transmitter...");
+      await this.transmitter.close();
+      this.transmitter = null;
+    }
 
-        if (type === "artnet") {
-          if (
-            !validateHost(host) ||
-            !validatePort(port) ||
-            !validateUniverse(net, subnet, universe)
-          ) {
-            logger.debug("Transmitter invalid config");
-            this.statusStore.output.connection = "idle";
-            this.statusStore.output.reasons = [StatusReason.INVALID_CONFIG];
-            return;
-          }
+    if (!enabled) {
+      logger.debug("Transmitter disabled");
+      this.statusStore.output.connection = "idle";
+      this.statusStore.output.reasons = [StatusReason.DISABLED];
+      return;
+    }
 
-          const options: ArtNetTransmitterOptions = {
-            host,
-            port,
-            net,
-            subnet,
-            universe,
-            fps,
-          };
-
-          logger.debug(
-            "Starting ArtNet transmitter...",
-            options,
-            `FPS: ${fps}`
-          );
-          this.statusStore.output.connection = "connecting";
-          this.statusStore.output.reasons = [];
-
-          try {
-            this.transmitter = await createArtNetTransmitter(options);
-            this.statusStore.output.connection = "connected";
-
-            // Sync buffer immediately
-            this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
-          } catch (error) {
-            logger.error("Failed to start transmitter", error);
-            this.statusStore.output.connection = "error";
-            this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
-          }
-        } else if (type === "ftdi") {
-          const deviceInfo = await getFtdiDeviceInfo(deviceSerial);
-          if (!deviceInfo) {
-            logger.debug("Transmitter invalid config");
-            this.statusStore.output.connection = "idle";
-            this.statusStore.output.reasons = [StatusReason.DEVICE_UNAVAILABLE];
-            return;
-          }
-
-          const options: FtdiTransmitterOptions = {
-            fps,
-            deviceInfo,
-          };
-
-          logger.debug("Starting FTDI transmitter...", options);
-          this.statusStore.output.connection = "connecting";
-          this.statusStore.output.reasons = [];
-
-          try {
-            this.transmitter = await createFtdiTransmitter(options);
-            this.statusStore.output.connection = "connected";
-
-            // Sync buffer immediately
-            this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
-          } catch (error) {
-            logger.error("Failed to start FTDI transmitter", error);
-            this.statusStore.output.connection = "error";
-            this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
-          }
-        }
-      },
-      {
-        immediate: true,
+    switch (type) {
+      case "artnet": {
+        await this.connectArtNetTransmitter(config);
+        break;
       }
-    );
+      case "ftdi": {
+        await this.connectFtdiTransmitter(config);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Connect ArtNet transmitter with given config. Existing transmitter will be closed or reconnected.
+   * @param config
+   */
+  private async connectArtNetTransmitter(config: ConfigStore["output"]) {
+    const { host, port, net, subnet, universe, fps } = config;
+    if (
+      !validateHost(host) ||
+      !validatePort(port) ||
+      !validateUniverse(net, subnet, universe)
+    ) {
+      logger.debug("Transmitter invalid config");
+      this.statusStore.output.connection = "idle";
+      this.statusStore.output.reasons = [StatusReason.INVALID_CONFIG];
+      return;
+    }
+
+    const options: ArtNetTransmitterOptions = {
+      host,
+      port,
+      net,
+      subnet,
+      universe,
+      fps,
+    };
+
+    logger.debug("Starting ArtNet transmitter...", options, `FPS: ${fps}`);
+    this.statusStore.output.connection = "connecting";
+    this.statusStore.output.reasons = [];
+
+    try {
+      this.transmitter = await createArtNetTransmitter(options);
+      this.statusStore.output.connection = "connected";
+
+      // Sync buffer immediately
+      this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
+    } catch (error) {
+      logger.error("Failed to start transmitter", error);
+      this.statusStore.output.connection = "error";
+      this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
+    }
+  }
+
+  /**
+   * Connect FTDI USB transmitter with given config. Existing transmitter will be closed or reconnected.
+   * @param config
+   */
+  private async connectFtdiTransmitter(config: ConfigStore["output"]) {
+    const { deviceSerial, fps } = config;
+    const deviceInfo = await getFtdiDeviceInfo(deviceSerial);
+    if (!deviceInfo) {
+      logger.debug("Transmitter invalid config");
+      this.statusStore.output.connection = "idle";
+      this.statusStore.output.reasons = [StatusReason.DEVICE_UNAVAILABLE];
+      return;
+    }
+
+    const options: FtdiTransmitterOptions = {
+      fps,
+      deviceInfo,
+    };
+
+    logger.debug("Starting FTDI transmitter...", options);
+    this.statusStore.output.connection = "connecting";
+    this.statusStore.output.reasons = [];
+
+    try {
+      this.transmitter = await createFtdiTransmitter(options);
+      this.statusStore.output.connection = "connected";
+
+      // Sync buffer immediately
+      this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
+    } catch (error) {
+      logger.error("Failed to start FTDI transmitter", error);
+      this.statusStore.output.connection = "error";
+      this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
+    }
   }
 
   emitStoreChange<K extends keyof SS>(storeId: K, statePatch: Partial<SS[K]>) {
