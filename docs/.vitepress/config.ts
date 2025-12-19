@@ -6,14 +6,18 @@ export default defineConfig({
   description: "A simple monitor or converter app for stage lighting system",
   base: process.env.VITEPRESS_BASE || "/",
   cleanUrls: true,
+  head: [["link", { rel: "icon", href: "/icon.png" }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: {
       src: "/icon.png",
       alt: "",
     },
+
     nav: [
       { text: "Home", link: "/" },
+      { text: "What is Obakesan?", link: "/intro" },
+      { text: "Documentation", link: "/interfaces/artnet" },
       {
         text: "Download",
         link: "/download",
@@ -21,6 +25,14 @@ export default defineConfig({
     ],
 
     sidebar: [
+      {
+        text: "Getting Started",
+        items: [
+          { text: "What is Obakesan?", link: "/intro" },
+          { text: "Quick Start", link: "/quickstart" },
+          { text: "Design Concept", link: "/design" },
+        ],
+      },
       {
         text: "Interfaces",
         items: [

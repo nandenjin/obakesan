@@ -2,7 +2,9 @@
 
 The **FTDI** interface enables DMX512 output using generic USB-to-DMX adapters based on the FTDI chip (e.g. FT232R).
 
+:::info
 Due to limitations of serial ports, **the FTDI interface is only for output (transmitter).**
+::::
 
 ## Configuration
 

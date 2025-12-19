@@ -4,12 +4,18 @@ layout: home
 
 hero:
   name: "Obakesan"
-  text: "DMX / Art-Netのシンプルな監視アプリ"
-  tagline: "舞台やメディアアートの現場に"
+  text: "制作に集中するための、DMX / Art-Net モニター & コンバーター"
+  tagline: "メディアアート・舞台システム開発のスタンドアロンツール"
   actions:
     - theme: brand
+      text: Obakesanとは？
+      link: ./intro
+    - theme: alt
       text: ダウンロード
       link: ./download
+    - theme: alt
+      text: ドキュメント
+      link: ./quickstart
     - theme: alt
       text: GitHub
       link: https://github.com/nandenjin/obakesan
@@ -18,10 +24,12 @@ hero:
     alt: DMXの値の行列を表示するアプリのスクリーンショット
 
 features:
-  - title: インターフェース
-    details: Art-NetとFTDI USB DMXのインターフェースと相互変換をサポートします。
-  - title: 複数のプラットフォームで動作
-    details: Windows、macOS、Linuxで軽量に動作します。
-  - title: オープンソース
-    details: GitHubで公開されているオープンソースのライセンスです。
+  - title: 🎨 直感的で美しいUI
+    details: デザイナーやアーティストのために設計された、分かりやすく洗練されたインターフェース
+  - title: 🔄 柔軟なプロトコル変換
+    details: Art-NetとUSB DMXの相互変換で、開発環境と実機環境をシームレスに接続
+  - title: 🚀 すぐ使える軽量設計
+    details: 複雑な設定不要。Windows、macOS、Linuxで動作するスタンドアロンアプリ
+  - title: 🛠️ オープンソースで自由に
+    details: MITライセンスで公開。カスタマイズも、商用プロジェクトへの組み込みも自由
 ---

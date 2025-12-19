@@ -4,12 +4,18 @@ layout: home
 
 hero:
   name: "Obakesan"
-  text: "A Simple, DMX / Art-Net Monitor / Converter App"
-  tagline: For Stage Performances or Artistic Projects
+  text: "DMX / Art-Net Monitor & Converter for Creators"
+  tagline: A standalone tool for media art and stage system development
   actions:
     - theme: brand
+      text: What is Obakesan?
+      link: /intro
+    - theme: alt
       text: Download
       link: /download
+    - theme: alt
+      text: Documentation
+      link: /quickstart
     - theme: alt
       text: GitHub
       link: https://github.com/nandenjin/obakesan
@@ -18,10 +24,12 @@ hero:
     alt: Screenshot of app window with data matrix of DMX values
 
 features:
-  - title: Interfaces
-    details: Flexible interfaces for Art-Net and FTDI USB DMX, and cross conversion between them.
-  - title: Works on Windows, macOS, and Linux
-    details: Simple and light-weight app with full support for all platforms.
-  - title: Open Source
-    details: Available on GitHub with permissive license.
+  - title: 🎨 Intuitive & Beautiful UI
+    details: Designed for designers and artists. Clean, elegant interface
+  - title: 🔄 Flexible Protocol Conversion
+    details: Seamlessly bridge Art-Net and USB DMX between development and production environments
+  - title: 🚀 Ready to Use, Lightweight
+    details: No complex setup required. Standalone app works on Windows, macOS, and Linux
+  - title: 🛠️ Open Source Freedom
+    details: Published under MIT License. Customize freely, integrate into commercial projects
 ---
