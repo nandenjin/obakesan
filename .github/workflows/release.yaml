@@ -89,6 +89,10 @@ jobs:
             dist/*.snap
             dist/*.deb
             dist/*.rpm
+            dist/latest.yml
             dist/latest-*.yml
+          # latest.yml is for auto update: https://www.electron.build/auto-update.html
+          # - latest.yml for Windows
+          # - latest-*.yml for macOS and Linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
