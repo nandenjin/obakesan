@@ -18,6 +18,7 @@
     </div>
     <div v-if="configPanelOpen" class="info">
       <AppVersionInfo />
+      <AppLogfileLink />
     </div>
   </div>
 </template>
@@ -29,6 +30,7 @@ import AppDmxMonitor from "./components/AppDmxMonitor.vue";
 import { platform } from "./util";
 import "@fontsource/roboto-mono";
 import AppVersionInfo from "./components/AppVersionInfo.vue";
+import AppLogfileLink from "./components/AppLogfileLink.vue";
 
 const configPanelOpen = ref<boolean>(false);
 </script>
@@ -110,9 +112,11 @@ header {
   padding: 10px;
   text-align: left;
   font-size: 11px;
+  display: flex;
 
-  .version {
-    cursor: pointer;
+  & > *:not(:last-child)::after {
+    content: "|";
+    margin: 0 1em;
   }
 }
 </style>

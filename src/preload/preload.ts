@@ -1,4 +1,4 @@
-import { ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer } from "electron/renderer";
 import consola from "consola";
 
 const logger = consola.withTag("preload");
@@ -27,3 +27,7 @@ ipcRenderer.on("store:emit", (_, { storeId, statePatch }) => {
     location.origin
   );
 });
+
+const showLogfileInFolder = () => ipcRenderer.invoke("show-logfile-in-folder");
+export type { showLogfileInFolder };
+contextBridge.exposeInMainWorld("showLogfileInFolder", showLogfileInFolder);

@@ -1,6 +1,6 @@
 <template>
   <span class="version-info">
-    <span @click="copyVersion">obakesan v{{ pkg.version }}</span>
+    <button @click="copyVersion">obakesan v{{ pkg.version }}</button>
     <Transition @after-enter="copied = false">
       <span v-if="copied" class="copied">Copied</span>
     </Transition>
@@ -22,7 +22,16 @@ function copyVersion() {
 <style scoped>
 .version-info {
   position: relative;
+}
+
+button {
+  appearance: none;
   cursor: pointer;
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  padding: 0;
 }
 
 .copied {

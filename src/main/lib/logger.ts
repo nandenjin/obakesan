@@ -4,10 +4,8 @@ import consola, {
   type ConsolaReporter,
   type LogObject,
 } from "consola";
-
-// Disable console logging from electron-log
-log.transports.console.level = false;
-log.initialize();
+import { ipcMain } from "electron/main";
+import { shell } from "electron/common";
 
 export class ElectronLogReporter implements ConsolaReporter {
   log(logObj: LogObject) {
@@ -63,7 +61,28 @@ export class ElectronLogReporter implements ConsolaReporter {
   }
 }
 
-consola.addReporter(new ElectronLogReporter());
-consola.wrapAll();
+function getFilePath() {
+  return log.transports.file.getFile().path;
+}
 
-export { consola as logger };
+function init() {
+  // Disable console logging from electron-log
+  log.transports.console.level = false;
+  log.initialize();
+
+  consola.addReporter(new ElectronLogReporter());
+  consola.wrapAll();
+
+  // Handle show-logfile-in-folder request from renderer
+  ipcMain.handle("show-logfile-in-folder", () => {
+    const filename = getFilePath();
+    consola.info("Opening log file folder: " + filename);
+    if (filename) {
+      shell.showItemInFolder(filename);
+    }
+  });
+}
+
+init();
+
+export { consola as logger, getFilePath };
