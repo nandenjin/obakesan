@@ -43,6 +43,44 @@ function getConfigPath(): string {
 }
 
 /**
+ * Validate that a parsed config has the expected structure
+ */
+function validateConfig(config: unknown): config is PersistedConfig {
+  if (!config || typeof config !== "object") return false;
+  
+  const c = config as Record<string, unknown>;
+  
+  // Check required top-level fields
+  if (typeof c.schemaVersion !== "string") return false;
+  if (typeof c.appVersion !== "string") return false;
+  if (!c.input || typeof c.input !== "object") return false;
+  if (!c.output || typeof c.output !== "object") return false;
+  
+  const input = c.input as Record<string, unknown>;
+  const output = c.output as Record<string, unknown>;
+  
+  // Validate input structure
+  if (typeof input.host !== "string") return false;
+  if (typeof input.port !== "number") return false;
+  if (typeof input.net !== "number") return false;
+  if (typeof input.subnet !== "number") return false;
+  if (typeof input.universe !== "number") return false;
+  
+  // Validate output structure
+  if (typeof output.enabled !== "boolean") return false;
+  if (output.type !== "artnet" && output.type !== "ftdi") return false;
+  if (typeof output.host !== "string") return false;
+  if (typeof output.port !== "number") return false;
+  if (typeof output.net !== "number") return false;
+  if (typeof output.subnet !== "number") return false;
+  if (typeof output.universe !== "number") return false;
+  if (typeof output.fps !== "number") return false;
+  if (typeof output.deviceSerial !== "string") return false;
+  
+  return true;
+}
+
+/**
  * Load configuration from disk
  * @returns The loaded configuration or null if it doesn't exist or is invalid
  */
@@ -52,7 +90,13 @@ export async function loadConfig(): Promise<PersistedConfig | null> {
     logger.info(`Loading config from ${configPath}`);
     
     const content = await readFile(configPath, "utf-8");
-    const parsed = TOML.parse(content) as unknown as PersistedConfig;
+    const parsed = TOML.parse(content);
+
+    // Validate structure
+    if (!validateConfig(parsed)) {
+      logger.warn("Config file has invalid structure, using defaults");
+      return null;
+    }
 
     // Validate schema version
     if (parsed.schemaVersion !== CONFIG_SCHEMA_VERSION) {

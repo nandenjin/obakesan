@@ -112,19 +112,30 @@ export class Controller extends EventEmitter {
    * Setup watchers to persist config changes
    */
   private setupConfigPersistence() {
+    let saveTimeout: NodeJS.Timeout | null = null;
+    
     // Watch for changes to input and output config and save them
+    // Debounce to prevent excessive disk I/O
     watch(
       [() => this.configStore.input, () => this.configStore.output],
       async ([input, output]) => {
-        try {
-          const config = createPersistedConfig(
-            { ...input },
-            { ...output }
-          );
-          await saveConfig(config);
-        } catch (error) {
-          logger.error("Failed to save config", error);
+        // Clear existing timeout
+        if (saveTimeout) {
+          clearTimeout(saveTimeout);
         }
+        
+        // Set new timeout to save after 500ms of inactivity
+        saveTimeout = setTimeout(async () => {
+          try {
+            const config = createPersistedConfig(
+              { ...input },
+              { ...output }
+            );
+            await saveConfig(config);
+          } catch (error) {
+            logger.error("Failed to save config", error);
+          }
+        }, 500);
       },
       { deep: true }
     );
