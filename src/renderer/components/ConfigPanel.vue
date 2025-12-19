@@ -8,10 +8,16 @@
       <div class="indicator">
         <span class="interface-part">
           <span class="label" :class="{ 'is-valid': isInputValid }">
-            {{ config.input.host }}:{{ config.input.port }}
-            {{ config.input.net }}/{{ config.input.subnet }}/{{
-              config.input.universe
-            }}
+            <template v-if="config.input.type === 'artnet'">
+              {{ config.input.host }}:{{ config.input.port }}
+              {{ config.input.net }}/{{ config.input.subnet }}/{{
+                config.input.universe
+              }}
+            </template>
+            <template v-else-if="config.input.type === 'osc'">
+              OSC {{ config.input.host }}:{{ config.input.port }}
+              {{ config.input.oscPath }}
+            </template>
             <template v-if="!isInputLost">
               @ {{ Math.round(dmx.fps) }}fps
             </template>
@@ -52,6 +58,14 @@
             >
               FTDI USB DMX @ {{ config.output.fps }}fps
             </span>
+            <span
+              v-else-if="config.output.type === 'osc'"
+              class="label"
+              :class="{ 'is-valid': isOutputValid }"
+            >
+              OSC {{ config.output.host }}:{{ config.output.port }}
+              {{ config.output.oscPath }} @ {{ config.output.fps }}fps
+            </span>
           </template>
           <span v-else>(Monitor only)</span>
           <BaseHoverTooltip
@@ -70,12 +84,31 @@
     </div>
     <div class="editor" :class="{ 'is-open': isOpen }">
       <ConfigPanelSection title="Input">
+        <div class="input-group">
+          <BaseSelectorSwitch
+            v-model="inputType"
+            :options="[
+              { label: 'Art-Net', value: 'artnet' },
+              { label: 'OSC', value: 'osc' },
+            ]"
+          />
+        </div>
         <ConfigPanelArtNetInput
+          v-if="input.type === 'artnet'"
           v-model:host="input.host"
           v-model:port="input.port"
           v-model:net="input.net"
           v-model:subnet="input.subnet"
           v-model:universe="input.universe"
+        />
+        <ConfigPanelOscInput
+          v-else-if="input.type === 'osc'"
+          v-model:host="input.host"
+          v-model:port="input.port"
+          v-model:osc-path="input.oscPath"
+          v-model:osc-start-channel="input.oscStartChannel"
+          v-model:osc-length="input.oscLength"
+          v-model:osc-data-type="input.oscDataType"
         />
       </ConfigPanelSection>
 
@@ -87,6 +120,7 @@
               { label: 'Off', value: 'off' },
               { label: 'Art-Net', value: 'artnet' },
               { label: 'FTDI USB', value: 'ftdi' },
+              { label: 'OSC', value: 'osc' },
             ]"
           />
         </div>
@@ -104,6 +138,16 @@
             v-model:net="output.net"
             v-model:subnet="output.subnet"
             v-model:universe="output.universe"
+            v-model:fps="output.fps"
+          />
+          <ConfigPanelOscOutput
+            v-else-if="output.type === 'osc'"
+            v-model:host="output.host"
+            v-model:port="output.port"
+            v-model:osc-path="output.oscPath"
+            v-model:osc-start-channel="output.oscStartChannel"
+            v-model:osc-length="output.oscLength"
+            v-model:osc-data-type="output.oscDataType"
             v-model:fps="output.fps"
           />
         </template>
@@ -129,6 +173,8 @@ import ConfigPanelSection from "./ConfigPanelSection.vue";
 import ConfigPanelArtNetInput from "./ConfigPanelArtNetInput.vue";
 import ConfigPanelArtNetOutput from "./ConfigPanelArtNetOutput.vue";
 import ConfigPanelFtdiOutput from "./ConfigPanelFtdiOutput.vue";
+import ConfigPanelOscInput from "./ConfigPanelOscInput.vue";
+import ConfigPanelOscOutput from "./ConfigPanelOscOutput.vue";
 
 const isOpen = defineModel<boolean>("open");
 
@@ -137,11 +183,16 @@ const status = useStatusStore();
 const dmx = useDmxStore();
 
 const input = reactive<typeof config.input>({
+  type: "artnet",
   host: "",
   port: 0,
   net: 0,
   subnet: 0,
   universe: 0,
+  oscPath: "/dmx/:channel",
+  oscStartChannel: 1,
+  oscLength: 512,
+  oscDataType: "int",
 });
 
 const output = reactive<typeof config.output>({
@@ -154,6 +205,10 @@ const output = reactive<typeof config.output>({
   universe: 0,
   fps: 0,
   deviceSerial: "",
+  oscPath: "/dmx/:channel",
+  oscStartChannel: 1,
+  oscLength: 512,
+  oscDataType: "int",
 });
 
 const logoVariant = computed(() => {
@@ -225,8 +280,17 @@ const outputSelection = computed({
       return;
     } else {
       output.enabled = true;
-      output.type = value as "artnet" | "ftdi";
+      output.type = value as "artnet" | "ftdi" | "osc";
     }
+  },
+});
+
+const inputType = computed({
+  get() {
+    return input.type;
+  },
+  set(value) {
+    input.type = value as "artnet" | "osc";
   },
 });
 
@@ -266,11 +330,16 @@ function getStatusMessage(
 const isInputLost = computed(() => dmx.lastUpdate < now.value - 1000);
 
 function setConfig() {
+  config.input.type = input.type;
   config.input.host = input.host;
   config.input.port = input.port;
   config.input.net = input.net;
   config.input.subnet = input.subnet;
   config.input.universe = input.universe;
+  config.input.oscPath = input.oscPath;
+  config.input.oscStartChannel = input.oscStartChannel;
+  config.input.oscLength = input.oscLength;
+  config.input.oscDataType = input.oscDataType;
 
   config.output.enabled = output.enabled;
   config.output.type = output.type;
@@ -281,6 +350,10 @@ function setConfig() {
   config.output.universe = output.universe;
   config.output.fps = output.fps;
   config.output.deviceSerial = output.deviceSerial;
+  config.output.oscPath = output.oscPath;
+  config.output.oscStartChannel = output.oscStartChannel;
+  config.output.oscLength = output.oscLength;
+  config.output.oscDataType = output.oscDataType;
 }
 
 watch(
@@ -295,11 +368,16 @@ watch(
 watch(
   config.input,
   (newInput) => {
+    input.type = newInput.type;
     input.host = newInput.host;
     input.port = newInput.port;
     input.net = newInput.net;
     input.subnet = newInput.subnet;
     input.universe = newInput.universe;
+    input.oscPath = newInput.oscPath;
+    input.oscStartChannel = newInput.oscStartChannel;
+    input.oscLength = newInput.oscLength;
+    input.oscDataType = newInput.oscDataType;
   },
   { immediate: true }
 );
@@ -315,6 +393,10 @@ watch(
     output.universe = newOutput.universe;
     output.fps = newOutput.fps;
     output.deviceSerial = newOutput.deviceSerial;
+    output.oscPath = newOutput.oscPath;
+    output.oscStartChannel = newOutput.oscStartChannel;
+    output.oscLength = newOutput.oscLength;
+    output.oscDataType = newOutput.oscDataType;
   },
   { immediate: true }
 );
