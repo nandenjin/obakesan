@@ -14,7 +14,7 @@ import pkg from "../../../package.json";
 const copied = ref<boolean>(false);
 
 function copyVersion() {
-  navigator.clipboard.writeText(pkg.version);
+  navigator.clipboard.writeText(navigator.userAgent);
   copied.value = true;
 }
 </script>
