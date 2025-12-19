@@ -5,6 +5,7 @@ export default defineConfig({
   title: "Obakesan",
   description: "A simple monitor or converter app for stage lighting system",
   base: process.env.VITEPRESS_BASE || "/",
+  cleanUrls: true,
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: {
