@@ -1,9 +1,11 @@
 /**
  * Validate host IP address or hostname
+ * Note: This performs basic validation. More comprehensive validation could be added
+ * if needed, but being permissive allows for various network configurations.
  */
 export function validateHost(host: string): boolean {
   if (!host || host.trim().length === 0) return false;
-  // Allow IP addresses and hostnames
+  // Allow IP addresses, hostnames, and localhost
   return true;
 }
 

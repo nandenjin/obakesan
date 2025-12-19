@@ -214,7 +214,8 @@ export class OscReceiver extends EventEmitter {
     if (arg.type === "integer") {
       return Math.max(0, Math.min(255, arg.value));
     } else if (arg.type === "float") {
-      // Assume float is 0.0-1.0 range, convert to 0-255
+      // Assume float is 0.0-1.0 range (standard in OSC), convert to 0-255
+      // Values outside this range are clamped
       const floatVal = Math.max(0, Math.min(1, arg.value));
       return Math.round(floatVal * 255);
     }

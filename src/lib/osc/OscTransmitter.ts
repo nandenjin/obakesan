@@ -171,12 +171,7 @@ export class OscTransmitter {
             address,
             args: [oscValue],
           });
-          // Convert DataView to Buffer
-          const buffer = Buffer.from(
-            msg.buffer,
-            msg.byteOffset,
-            msg.byteLength
-          );
+          const buffer = this.dataViewToBuffer(msg);
           device.send(this.socketKey, buffer, this.host, this.port);
         }
       }
@@ -200,8 +195,7 @@ export class OscTransmitter {
         address: this.path,
         args: [{ type: "blob", value: data }],
       });
-      // Convert DataView to Buffer
-      const buffer = Buffer.from(msg.buffer, msg.byteOffset, msg.byteLength);
+      const buffer = this.dataViewToBuffer(msg);
       device.send(this.socketKey!, buffer, this.host, this.port);
     } else {
       // Send as array of int/float values
@@ -217,10 +211,20 @@ export class OscTransmitter {
         address: this.path,
         args,
       });
-      // Convert DataView to Buffer
-      const buffer = Buffer.from(msg.buffer, msg.byteOffset, msg.byteLength);
+      const buffer = this.dataViewToBuffer(msg);
       device.send(this.socketKey!, buffer, this.host, this.port);
     }
+  }
+
+  /**
+   * Helper method to convert DataView to Buffer
+   */
+  private dataViewToBuffer(dataView: DataView): Buffer {
+    return Buffer.from(
+      dataView.buffer,
+      dataView.byteOffset,
+      dataView.byteLength
+    );
   }
 
   private createOscValue(value: number): OscArgInput {
