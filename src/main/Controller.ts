@@ -28,6 +28,11 @@ import {
 } from "../lib/FtdiTransmitter";
 import { StatusReason, useStatusStore } from "../store/status";
 import { logger as baseLogger } from "./lib/logger";
+import {
+  loadConfig,
+  saveConfig,
+  createPersistedConfig,
+} from "./lib/configPersistence";
 
 const logger = baseLogger.withTag("Controller");
 
@@ -69,6 +74,8 @@ export class Controller extends EventEmitter {
     const statusStore = useStatusStore(this.pinia);
     this.statusStore = statusStore;
 
+    this.loadPersistedConfig();
+    this.setupConfigPersistence();
     this.setupReceiver();
     this.setupTransmitter();
     this.setupDeviceScanner();
@@ -81,6 +88,45 @@ export class Controller extends EventEmitter {
           this.transmitter.buffer.set(this.dmxStore.buffer);
         }
       }
+    );
+  }
+
+  /**
+   * Load persisted configuration from disk and apply it
+   */
+  private async loadPersistedConfig() {
+    try {
+      const config = await loadConfig();
+      if (config) {
+        logger.info("Applying persisted config");
+        // Apply loaded config to the store
+        Object.assign(this.configStore.input, config.input);
+        Object.assign(this.configStore.output, config.output);
+      }
+    } catch (error) {
+      logger.error("Failed to load persisted config", error);
+    }
+  }
+
+  /**
+   * Setup watchers to persist config changes
+   */
+  private setupConfigPersistence() {
+    // Watch for changes to input and output config and save them
+    watch(
+      [() => this.configStore.input, () => this.configStore.output],
+      async ([input, output]) => {
+        try {
+          const config = createPersistedConfig(
+            { ...input },
+            { ...output }
+          );
+          await saveConfig(config);
+        } catch (error) {
+          logger.error("Failed to save config", error);
+        }
+      },
+      { deep: true }
     );
   }
 
