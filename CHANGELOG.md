@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.0](https://github.com/nandenjin/obakesan/compare/v0.0.4...v0.1.0) (2025-12-19)
+
+
+### Features
+
+* Add "Show log file" button ([8db8379](https://github.com/nandenjin/obakesan/commit/8db83796b4a438f2d096db43731424b4112ee2ee))
+* Generate log file for main process ([6f95cbd](https://github.com/nandenjin/obakesan/commit/6f95cbd31c830bae3c977b0d6a961e74c04f8c5c))
+
+
+### Bug Fixes
+
+* Declare IPC types for `electron/main`, not `electron` ([52f5f2e](https://github.com/nandenjin/obakesan/commit/52f5f2e9502a59bef47d7b6c2c8317426170b3c9))
+
 ## [0.0.4](https://github.com/nandenjin/obakesan/compare/v0.0.3...v0.0.4) (2025-12-17)
 
 
