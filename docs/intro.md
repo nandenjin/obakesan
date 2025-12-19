@@ -58,3 +58,7 @@ Monitor Art-Net packets flowing between devices on site. Verify that distributed
 
 When things don't work as expected, it's often unclear whether the problem is in production software, wiring, or equipment. By checking data with Obakesan, you can isolate whether signals are being transmitted correctly.
 ```
+
+## About the Name
+
+"Obakesan" (おばけさん, meaning "ghost" + honorific for friends) comes from a character in the puppetry performance "The Friend Behind Me" (うしろのともだち) by Puppetry Troupe NEU from University of Tsukuba, Japan. The original work was created by Miyuki Isogai (a.k.a. "Jackpot").

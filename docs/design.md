@@ -35,7 +35,3 @@ Designed for developers building custom systems without relying on commercial pr
 - **Electron**: Cross-platform support
 - **Vue.js**: Reactive UI implementation
 - **MIT License**: Published as open source
-
-## About the Name
-
-"Obakesan" (おばけさん, meaning "ghost" + honorific for friends) comes from a character in the puppetry performance "The Friend Behind Me" (うしろのともだち) by Puppetry Troupe NEU from University of Tsukuba, Japan. The original work was created by Miyuki Isogai (a.k.a. "Jackpot").
