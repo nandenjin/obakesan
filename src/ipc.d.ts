@@ -9,7 +9,7 @@ type IpcEvents = {
   ];
 };
 
-declare module "electron" {
+declare module "electron/main" {
   namespace Electron {
     interface IpcMain {
       on<E extends keyof IpcEvents>(
