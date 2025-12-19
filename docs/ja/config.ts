@@ -11,6 +11,14 @@ export default defineConfig({
       { text: "ダウンロード", link: "/ja/download" },
     ],
 
-    sidebar: [],
+    sidebar: [
+      {
+        text: "インターフェース",
+        items: [
+          { text: "Art-Net", link: "/ja/interfaces/artnet" },
+          { text: "FTDI", link: "/ja/interfaces/ftdi" },
+        ],
+      },
+    ],
   },
 });

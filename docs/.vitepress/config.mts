@@ -19,7 +19,15 @@ export default defineConfig({
       },
     ],
 
-    sidebar: [],
+    sidebar: [
+      {
+        text: "Interfaces",
+        items: [
+          { text: "Art-Net", link: "/interfaces/artnet" },
+          { text: "FTDI", link: "/interfaces/ftdi" },
+        ],
+      },
+    ],
 
     socialLinks: [
       { icon: "github", link: "https://github.com/nandenjin/obakesan" },
