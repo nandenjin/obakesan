@@ -77,7 +77,6 @@ export class SignalGenerator extends EventEmitter {
   private generateFrame(): void {
     const elapsedSeconds = (Date.now() - this.startTime) / 1000;
     const phase = (elapsedSeconds * this.frequency) % 1; // 0 to 1
-    
     let value: number;
     switch (this.waveType) {
       case "sine":

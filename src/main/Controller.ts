@@ -108,7 +108,6 @@ export class Controller extends EventEmitter {
 
   private async updateInput(config: ConfigStore["input"]) {
     const { type } = config;
-    
     // Clean up existing input sources
     this.cleanupInputSources();
 
