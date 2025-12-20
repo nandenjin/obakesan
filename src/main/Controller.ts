@@ -97,6 +97,7 @@ export class Controller extends EventEmitter {
       logger.debug("Shutting down previous receiver...");
       this.receiver.close();
       this.receiver = null; // Ensure receiver is cleared
+      this.dmxStore.clear(); // Clear channel values when switching input source
     }
 
     if (

@@ -14,6 +14,10 @@ export const useDmxStore = defineStore("dmx", () => {
     cursor.value = (cursor.value + 1) % TS_BUFFER_SIZE;
   }
 
+  function clear() {
+    buffer.value.fill(0);
+  }
+
   const lastUpdate = computed(() => {
     return timestamps.value[
       (cursor.value - 1 + TS_BUFFER_SIZE) % TS_BUFFER_SIZE
@@ -41,6 +45,7 @@ export const useDmxStore = defineStore("dmx", () => {
     timestamps,
     cursor,
     tick,
+    clear,
     fps,
   };
 });
