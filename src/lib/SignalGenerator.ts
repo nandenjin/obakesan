@@ -96,9 +96,10 @@ export class SignalGenerator extends EventEmitter {
         value = 0;
     }
 
-    // Set all 512 channels to the same value for simplicity
-    const values = new Array(512).fill(value);
-    this.buffer.set(values);
+    // Set all 512 channels to the same value efficiently
+    for (let i = 0; i < 512; i++) {
+      this.buffer.data[i] = value;
+    }
   }
 
   on<K extends keyof SignalGeneratorEvents>(

@@ -95,10 +95,7 @@ export class Controller extends EventEmitter {
     });
   }
 
-  private async updateInput(config: ConfigStore["input"]) {
-    const { type } = config;
-    
-    // Clean up existing input sources
+  private cleanupInputSources() {
     if (this.receiver) {
       this.receiver.close();
       this.receiver = null;
@@ -107,6 +104,13 @@ export class Controller extends EventEmitter {
       this.signalGenerator.close();
       this.signalGenerator = null;
     }
+  }
+
+  private async updateInput(config: ConfigStore["input"]) {
+    const { type } = config;
+    
+    // Clean up existing input sources
+    this.cleanupInputSources();
 
     switch (type) {
       case "artnet":
