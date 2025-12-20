@@ -1,6 +1,6 @@
 import { defineConfig } from "vitepress";
 
-const host = process.env.VITEPRESS_HOST || "https://example.com";
+const host = process.env.VITEPRESS_HOST_WITH_BASE || "https://example.com";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({

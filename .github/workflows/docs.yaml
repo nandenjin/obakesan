@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run docs:build
         env:
+          VITEPRESS_HOST_WITH_BASE: https://nandenjin.github.io/obakesan
           VITEPRESS_BASE: /obakesan
       - name: Upload static files as artifact
         id: deployment
