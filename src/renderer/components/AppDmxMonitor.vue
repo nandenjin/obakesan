@@ -127,6 +127,7 @@ onBeforeUnmount(() => {
       background-color: #222;
       text-align: center;
       border-radius: 5px;
+      overflow: hidden;
 
       .value {
         position: absolute;
