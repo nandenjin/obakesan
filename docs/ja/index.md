@@ -1,10 +1,11 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
+title: Obakesan - DMX / Art-Net Monitor & Converter for Creators
 
 hero:
   name: "Obakesan"
-  text: "制作に集中するための、DMX / Art-Net モニター & コンバーター"
+  text: "クリエイターのための、DMX / Art-Net モニター & コンバーター"
   tagline: "メディアアート・舞台システム開発のスタンドアロンツール"
   actions:
     - theme: brand

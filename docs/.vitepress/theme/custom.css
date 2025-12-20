@@ -7,6 +7,10 @@
 
 /* Show larger image in hero */
 .VPHero {
+  .container {
+    gap: 2rem;
+  }
+
   .image-src {
     max-width: unset;
     max-height: unset;

@@ -1,12 +1,29 @@
 import { defineConfig } from "vitepress";
 
+const host = process.env.VITEPRESS_HOST || "https://example.com";
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  lang: "en-US",
   title: "Obakesan",
   description: "A simple monitor or converter app for stage lighting system",
   base: process.env.VITEPRESS_BASE || "/",
   cleanUrls: true,
-  head: [["link", { rel: "icon", href: "/icon.png" }]],
+  head: [
+    ["link", { rel: "icon", href: "/icon.png" }],
+    ["meta", { property: "og:title", content: "Obakesan" }],
+    [
+      "meta",
+      {
+        property: "og:description",
+        content: "A simple monitor or converter app for stage lighting system",
+      },
+    ],
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:image", content: `${host}/ogp-en.png` }],
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
+    ["meta", { name: "twitter:site", content: host }],
+  ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: {

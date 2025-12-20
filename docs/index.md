@@ -1,6 +1,7 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
+title: Obakesan - DMX / Art-Net Monitor & Converter for Creators
 
 hero:
   name: "Obakesan"
