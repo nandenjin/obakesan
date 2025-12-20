@@ -7,11 +7,25 @@
     >
       <div class="indicator">
         <span class="interface-part">
-          <span class="label" :class="{ 'is-valid': isInputValid }">
+          <span
+            v-if="config.input.type === 'artnet'"
+            class="label"
+            :class="{ 'is-valid': isInputValid }"
+          >
             {{ config.input.host }}:{{ config.input.port }}
             {{ config.input.net }}/{{ config.input.subnet }}/{{
               config.input.universe
             }}
+            <template v-if="!isInputLost">
+              @ {{ Math.round(dmx.fps) }}fps
+            </template>
+          </span>
+          <span
+            v-else-if="config.input.type === 'signal'"
+            class="label"
+            :class="{ 'is-valid': isInputValid }"
+          >
+            Signal: {{ config.input.waveType }} @ {{ config.input.frequency }}Hz
             <template v-if="!isInputLost">
               @ {{ Math.round(dmx.fps) }}fps
             </template>
@@ -70,12 +84,27 @@
     </div>
     <div class="editor" :class="{ 'is-open': isOpen }">
       <ConfigPanelSection title="Input">
+        <div class="input-group">
+          <BaseSelectorSwitch
+            v-model="inputSelection"
+            :options="[
+              { label: 'Art-Net', value: 'artnet' },
+              { label: 'Signal', value: 'signal' },
+            ]"
+          />
+        </div>
         <ConfigPanelArtNetInput
+          v-if="input.type === 'artnet'"
           v-model:host="input.host"
           v-model:port="input.port"
           v-model:net="input.net"
           v-model:subnet="input.subnet"
           v-model:universe="input.universe"
+        />
+        <ConfigPanelSignalInput
+          v-else-if="input.type === 'signal'"
+          v-model:wave-type="input.waveType"
+          v-model:frequency="input.frequency"
         />
       </ConfigPanelSection>
 
@@ -127,6 +156,7 @@ import { useDmxStore } from "../../store/dmx";
 import BaseSelectorSwitch from "./BaseSelectorSwitch.vue";
 import ConfigPanelSection from "./ConfigPanelSection.vue";
 import ConfigPanelArtNetInput from "./ConfigPanelArtNetInput.vue";
+import ConfigPanelSignalInput from "./ConfigPanelSignalInput.vue";
 import ConfigPanelArtNetOutput from "./ConfigPanelArtNetOutput.vue";
 import ConfigPanelFtdiOutput from "./ConfigPanelFtdiOutput.vue";
 
@@ -137,11 +167,14 @@ const status = useStatusStore();
 const dmx = useDmxStore();
 
 const input = reactive<typeof config.input>({
+  type: "artnet",
   host: "",
   port: 0,
   net: 0,
   subnet: 0,
   universe: 0,
+  waveType: "sine",
+  frequency: 1,
 });
 
 const output = reactive<typeof config.output>({
@@ -230,6 +263,15 @@ const outputSelection = computed({
   },
 });
 
+const inputSelection = computed({
+  get() {
+    return input.type;
+  },
+  set(value) {
+    input.type = value as "artnet" | "signal";
+  },
+});
+
 function getStatusMessage(
   connection: ConnectionStatus,
   reasons: StatusReason[],
@@ -266,11 +308,14 @@ function getStatusMessage(
 const isInputLost = computed(() => dmx.lastUpdate < now.value - 1000);
 
 function setConfig() {
+  config.input.type = input.type;
   config.input.host = input.host;
   config.input.port = input.port;
   config.input.net = input.net;
   config.input.subnet = input.subnet;
   config.input.universe = input.universe;
+  config.input.waveType = input.waveType;
+  config.input.frequency = input.frequency;
 
   config.output.enabled = output.enabled;
   config.output.type = output.type;
@@ -295,11 +340,14 @@ watch(
 watch(
   config.input,
   (newInput) => {
+    input.type = newInput.type;
     input.host = newInput.host;
     input.port = newInput.port;
     input.net = newInput.net;
     input.subnet = newInput.subnet;
     input.universe = newInput.universe;
+    input.waveType = newInput.waveType;
+    input.frequency = newInput.frequency;
   },
   { immediate: true }
 );

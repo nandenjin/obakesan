@@ -26,6 +26,10 @@ import {
   getFtdiDeviceInfo,
   listFtdiDevices,
 } from "../lib/FtdiTransmitter";
+import {
+  createSignalGenerator,
+  SignalGenerator,
+} from "../lib/SignalGenerator";
 import { StatusReason, useStatusStore } from "../store/status";
 import { logger as baseLogger } from "./lib/logger";
 
@@ -49,6 +53,7 @@ export class Controller extends EventEmitter {
   relay: PiniaRemoteSync;
   vue = createApp({});
   receiver: ArtNetReceiver | null = null;
+  signalGenerator: SignalGenerator | null = null;
   transmitter: ArtNetTransmitter | FtdiTransmitter | null = null;
 
   constructor() {
@@ -85,19 +90,37 @@ export class Controller extends EventEmitter {
   }
 
   setupReceiver() {
-    watch(this.configStore.input, (config) => this.updateReceiver(config), {
+    watch(this.configStore.input, (config) => this.updateInput(config), {
       immediate: true,
     });
+  }
+
+  private async updateInput(config: ConfigStore["input"]) {
+    const { type } = config;
+    
+    // Clean up existing input sources
+    if (this.receiver) {
+      this.receiver.close();
+      this.receiver = null;
+    }
+    if (this.signalGenerator) {
+      this.signalGenerator.close();
+      this.signalGenerator = null;
+    }
+
+    switch (type) {
+      case "artnet":
+        await this.updateReceiver(config);
+        break;
+      case "signal":
+        await this.updateSignalGenerator(config);
+        break;
+    }
   }
 
   private async updateReceiver(config: ConfigStore["input"]) {
     const { host, port, net, subnet, universe } = config;
     logger.debug("Config store changed", host, port, net, subnet, universe);
-    if (this.receiver) {
-      logger.debug("Shutting down previous receiver...");
-      this.receiver.close();
-      this.receiver = null; // Ensure receiver is cleared
-    }
 
     if (
       !validateHost(host) ||
@@ -150,6 +173,43 @@ export class Controller extends EventEmitter {
       this.statusStore.input.connection = "error";
       this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
       logger.fail("Failed to start receiver", options);
+    }
+  }
+
+  private async updateSignalGenerator(config: ConfigStore["input"]) {
+    const { waveType, frequency } = config;
+    logger.debug("Starting signal generator...", { waveType, frequency });
+
+    try {
+      this.statusStore.input.connection = "connecting";
+      this.statusStore.input.reasons.length = 0;
+
+      const generator = await createSignalGenerator({
+        waveType,
+        frequency,
+        fps: 30,
+      });
+
+      generator.on("update", () => {
+        for (let i = 0; i < 512; i++) {
+          this.dmxStore.buffer[i] = generator.buffer.data[i] ?? 0;
+        }
+        this.dmxStore.tick();
+      });
+
+      generator.on("error", (error) => {
+        logger.error(error);
+        this.emit("error", error);
+      });
+
+      this.signalGenerator = generator;
+      this.statusStore.input.connection = "connected";
+      logger.success("Signal generator started", { waveType, frequency });
+    } catch (error) {
+      logger.error(error);
+      this.statusStore.input.connection = "error";
+      this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
+      logger.fail("Failed to start signal generator", { waveType, frequency });
     }
   }
 
