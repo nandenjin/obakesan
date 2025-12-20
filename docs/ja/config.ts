@@ -6,14 +6,14 @@ const host = process.env.VITEPRESS_HOST_WITH_BASE || "https://example.com";
 export default defineConfig({
   lang: "ja",
   title: "Obakesan",
-  description: "制作に集中するための、DMX / Art-Net モニター & コンバーター",
+  description: "クリエイターのための、DMX / Art-Net モニター & コンバーター",
   head: [
     ["meta", { property: "og:title", content: "Obakesan" }],
     [
       "meta",
       {
         property: "og:description",
-        content: "制作に集中するための、DMX / Art-Net モニター & コンバーター",
+        content: "クリエイターのための、DMX / Art-Net モニター & コンバーター",
       },
     ],
     ["meta", { property: "og:type", content: "website" }],
