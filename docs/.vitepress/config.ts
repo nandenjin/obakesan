@@ -10,7 +10,7 @@ export default defineConfig({
   base: process.env.VITEPRESS_BASE || "/",
   cleanUrls: true,
   head: [
-    ["link", { rel: "icon", href: "/icon.png" }],
+    ["link", { rel: "icon", href: process.env.VITEPRESS_BASE + "/icon.png" }],
     ["meta", { property: "og:title", content: "Obakesan" }],
     [
       "meta",
