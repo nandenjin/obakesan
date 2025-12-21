@@ -20,6 +20,16 @@ import {
   validateUniverse,
 } from "../lib/artnet/validation";
 import {
+  OscReceiver,
+  OscReceiverConnectOptions,
+  createOscReceiver,
+  OscTransmitter,
+  OscTransmitterOptions,
+  createOscTransmitter,
+  validatePath,
+  validateChannelRange,
+} from "../lib/osc";
+import {
   createFtdiTransmitter,
   FtdiTransmitter,
   FtdiTransmitterOptions,
@@ -48,8 +58,9 @@ export class Controller extends EventEmitter {
   statusStore: ReturnType<typeof useStatusStore>;
   relay: PiniaRemoteSync;
   vue = createApp({});
-  receiver: ArtNetReceiver | null = null;
-  transmitter: ArtNetTransmitter | FtdiTransmitter | null = null;
+  receiver: ArtNetReceiver | OscReceiver | null = null;
+  transmitter: ArtNetTransmitter | FtdiTransmitter | OscTransmitter | null =
+    null;
 
   constructor() {
     super();
@@ -91,8 +102,8 @@ export class Controller extends EventEmitter {
   }
 
   private async updateReceiver(config: ConfigStore["input"]) {
-    const { host, port, net, subnet, universe } = config;
-    logger.debug("Config store changed", host, port, net, subnet, universe);
+    const { type, host, port } = config;
+    logger.debug("Config store changed", type, host, port);
     if (this.receiver) {
       logger.debug("Shutting down previous receiver...");
       this.receiver.close();
@@ -100,18 +111,34 @@ export class Controller extends EventEmitter {
       this.dmxStore.clear(); // Clear channel values when switching input source
     }
 
-    if (
-      !validateHost(host) ||
-      !validatePort(port) ||
-      !validateUniverse(net, subnet, universe)
-    ) {
-      logger.info("Stopping receiver due to invalid config");
-      this.statusStore.input.connection = "idle";
-      this.statusStore.input.reasons = [StatusReason.INVALID_CONFIG];
-      return;
+    if (type === "artnet") {
+      const { net, subnet, universe } = config;
+      if (
+        !validateHost(host) ||
+        !validatePort(port) ||
+        !validateUniverse(net, subnet, universe)
+      ) {
+        logger.info("Stopping receiver due to invalid config");
+        this.statusStore.input.connection = "idle";
+        this.statusStore.input.reasons = [StatusReason.INVALID_CONFIG];
+        return;
+      }
+      await this.connectArtNetReceiver(config);
+    } else if (type === "osc") {
+      const { oscPath, oscStartChannel, oscLength } = config;
+      if (
+        !validateHost(host) ||
+        !validatePort(port) ||
+        !validatePath(oscPath) ||
+        !validateChannelRange(oscStartChannel, oscLength)
+      ) {
+        logger.info("Stopping OSC receiver due to invalid config");
+        this.statusStore.input.connection = "idle";
+        this.statusStore.input.reasons = [StatusReason.INVALID_CONFIG];
+        return;
+      }
+      await this.connectOscReceiver(config);
     }
-
-    await this.connectArtNetReceiver(config);
   }
 
   private async connectArtNetReceiver(config: ConfigStore["input"]) {
@@ -151,6 +178,54 @@ export class Controller extends EventEmitter {
       this.statusStore.input.connection = "error";
       this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
       logger.fail("Failed to start receiver", options);
+    }
+  }
+
+  private async connectOscReceiver(config: ConfigStore["input"]) {
+    const {
+      host,
+      port,
+      oscPath,
+      oscStartChannel,
+      oscLength,
+      oscDataType,
+    } = config;
+    const options: OscReceiverConnectOptions = {
+      bindHost: host,
+      port,
+      path: oscPath,
+      startChannel: oscStartChannel,
+      length: oscLength,
+      dataType: oscDataType,
+    };
+
+    logger.debug("Starting OSC receiver...", options);
+    try {
+      this.statusStore.input.connection = "connecting";
+      this.statusStore.input.reasons.length = 0;
+
+      const receiver = await createOscReceiver(options);
+
+      receiver.on("update", () => {
+        for (let i = 0; i < 512; i++) {
+          this.dmxStore.buffer[i] = receiver.buffer.data[i] ?? 0;
+        }
+        this.dmxStore.tick();
+      });
+
+      receiver.on("error", (error) => {
+        logger.error(error);
+        this.emit("error", error);
+      });
+
+      this.receiver = receiver;
+      this.statusStore.input.connection = "connected";
+      logger.success("OSC receiver started", options);
+    } catch (error) {
+      logger.error(error);
+      this.statusStore.input.connection = "error";
+      this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
+      logger.fail("Failed to start OSC receiver", options);
     }
   }
 
@@ -205,6 +280,10 @@ export class Controller extends EventEmitter {
       }
       case "ftdi": {
         await this.connectFtdiTransmitter(config);
+        break;
+      }
+      case "osc": {
+        await this.connectOscTransmitter(config);
         break;
       }
     }
@@ -294,6 +373,50 @@ export class Controller extends EventEmitter {
       logger.fail("FTDITransmitter is failed to start", error);
       this.statusStore.output.connection = "error";
       this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
+    }
+  }
+
+  /**
+   * Connect OSC transmitter with given config. Existing transmitter will be closed or reconnected.
+   * @param config
+   */
+  private async connectOscTransmitter(config: ConfigStore["output"]) {
+    const { host, port, oscPath, fps } = config;
+    if (!validateHost(host) || !validatePort(port) || !validatePath(oscPath)) {
+      logger.info("OSC transmitter is stopped due to invalid config");
+      this.statusStore.output.connection = "idle";
+      this.statusStore.output.reasons = [StatusReason.INVALID_CONFIG];
+      return;
+    }
+
+    // OSC output always sends whole universe (512 channels) as blob
+    const options: OscTransmitterOptions = {
+      host,
+      port,
+      path: oscPath,
+      startChannel: 1,
+      length: 512,
+      dataType: "blob",
+      fps,
+    };
+
+    logger.debug("Starting OSC transmitter...", options, `FPS: ${fps}`);
+    this.statusStore.output.connection = "connecting";
+    this.statusStore.output.reasons = [];
+
+    try {
+      this.transmitter = await createOscTransmitter(options);
+      this.statusStore.output.connection = "connected";
+
+      logger.success("OSC transmitter started", options, `FPS: ${fps}`);
+
+      // Sync buffer immediately
+      this.transmitter.send(new DmxFrame().set(this.dmxStore.buffer));
+    } catch (error) {
+      logger.error("Failed to start OSC transmitter", error);
+      this.statusStore.output.connection = "error";
+      this.statusStore.output.reasons = [StatusReason.FAILED_TO_CONNECT];
+      logger.fail("OSC transmitter failed to start", options, `FPS: ${fps}`);
     }
   }
 

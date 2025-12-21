@@ -5,7 +5,7 @@
 ![GitHub of Vue.js](https://img.shields.io/github/package-json/dependency-version/nandenjin/obakesan/vue?style=flat-square&logo=vue.js)
 [![License](https://img.shields.io/github/license/nandenjin/obakesan?style=flat-square)](/LICENSE)
 
-A DMX / Art-Net Monitor or Converter App for Stage Designers and Artists.
+A DMX / Art-Net / OSC Monitor or Converter App for Stage Designers and Artists.
 
 ## 📦️ Get the App
 
@@ -14,7 +14,10 @@ A DMX / Art-Net Monitor or Converter App for Stage Designers and Artists.
 ## ✨️ Features
 
 - 🌀 **Simple and Lightweight**
-- 🧰 Supports **Art-Net and FTDI USB DMX (output only)**
+- 🧰 Supports **Art-Net, OSC, and FTDI USB DMX**
+  - Art-Net: Industry-standard network DMX protocol
+  - OSC: Open Sound Control for creative applications
+  - FTDI USB DMX: Direct USB output (output only)
 - 🖥️ Works on **Windows, macOS and Linux**
 
 <img src="/docs/public/screenshot.png" height="300" alt="Image of screenshot of the app with table of DMX channels">
