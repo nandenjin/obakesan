@@ -16,9 +16,12 @@ When configured as a **Signal Generator** input, the application generates conti
 ### Wave Types
 
 #### Sine Wave
-A smooth, continuous oscillation between 0 and 255. Creates gentle, flowing lighting transitions.
+A smooth, continuous oscillation between 0 and 255. Creates gentle, flowing lighting transitions. Each channel has a slight phase offset creating a "fanning" effect across all 512 channels.
 
-**Mathematical Formula**: `(sin(φ·2π) + 1) · 127.5`
+**Mathematical Formula**: `value = floor(((sin((t·f + i/512)·2π) + 1) / 2) · 255)`
+- `t` = elapsed time in seconds
+- `f` = frequency in Hz
+- `i` = channel index (0-511)
 
 **Use Cases**:
 - Smooth fading effects
@@ -26,9 +29,12 @@ A smooth, continuous oscillation between 0 and 255. Creates gentle, flowing ligh
 - Gentle color transitions
 
 #### Square Wave
-A binary signal that alternates between 0 and 255. Creates sharp on/off transitions.
+A binary signal that alternates between 0 and 255. Creates sharp on/off transitions. Each channel has a slight phase offset creating a "fanning" effect across all 512 channels.
 
-**Mathematical Formula**: `phase < 0.5 ? 0 : 255`
+**Mathematical Formula**: `value = (t·f + i/512) % 1 < 0.5 ? 0 : 255`
+- `t` = elapsed time in seconds
+- `f` = frequency in Hz
+- `i` = channel index (0-511)
 
 **Use Cases**:
 - Strobe effects
@@ -36,9 +42,12 @@ A binary signal that alternates between 0 and 255. Creates sharp on/off transiti
 - Sharp color changes
 
 #### Sawtooth Wave
-A linear ramp from 0 to 255, then resets. Creates a rising fade followed by an instant reset.
+A linear ramp from 0 to 255, then resets. Creates a rising fade followed by an instant reset. Each channel has a slight phase offset creating a "fanning" effect across all 512 channels.
 
-**Mathematical Formula**: `phase · 255`
+**Mathematical Formula**: `value = floor(((t·f + i/512) % 1) · 255)`
+- `t` = elapsed time in seconds
+- `f` = frequency in Hz
+- `i` = channel index (0-511)
 
 **Use Cases**:
 - Ramping effects
@@ -57,9 +66,10 @@ The frequency parameter controls how many complete wave cycles occur per second:
 ### Technical Details
 
 - **Update Rate**: 30 FPS (frames per second)
-- **Channel Coverage**: All 512 DMX channels are set to the same value
+- **Channel Coverage**: All 512 DMX channels
+- **Channel Fanning**: Each channel has a progressive phase offset (i/512) creating a wave pattern across channels
 - **Value Range**: 0-255 (standard DMX range)
-- **Phase Calculation**: Based on elapsed time since start
+- **Phase Calculation**: Based on elapsed time since start plus channel offset
 
 ## Output Compatibility
 
@@ -88,4 +98,5 @@ This allows you to use the Signal Generator to drive real lighting fixtures or s
 
 - The Signal Generator operates independently of external DMX sources
 - Switching between Art-Net and Signal Generator input is seamless
-- All channels receive the same waveform value for simplicity
+- Channels receive progressive phase-offset values creating a wave pattern across all channels
+- The fanning effect creates visual dynamics where different channels peak at different times
