@@ -34,15 +34,13 @@ Production software (TouchDesigner, MaxMSP, etc.)
 
 Even without physical equipment, you can verify DMX values being sent from production software. Check behavior immediately and continue development without requiring actual devices.
 
-Alternatively, use the built-in Signal Generator to test your setup:
+Alternatively, use the built-in Generator to test your setup:
 
 ```
-Obakesan (Signal Generator)
+Obakesan (Generator)
   -- (Art-Net or USB DMX) -->
   Output to devices or visualizers
 ```
-
-Generate test signals with sine, square, or sawtooth waveforms to verify your lighting setup works correctly. The signal generator is a testing tool that provides predictable patterns for troubleshooting.
 
 ### Protocol Conversion and Monitoring
 

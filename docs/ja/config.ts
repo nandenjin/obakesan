@@ -45,6 +45,7 @@ export default defineConfig({
         items: [
           { text: "Art-Net", link: "/ja/interfaces/artnet" },
           { text: "FTDI", link: "/ja/interfaces/ftdi" },
+          { text: "ジェネレーター", link: "/ja/interfaces/generator" },
         ],
       },
     ],

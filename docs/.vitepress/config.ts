@@ -31,6 +31,7 @@ export default defineConfig({
       alt: "",
     },
 
+    // For Japanese version, refer to ../ja/config.ts
     nav: [
       { text: "Home", link: "/" },
       { text: "What is Obakesan?", link: "/intro" },
@@ -41,6 +42,7 @@ export default defineConfig({
       },
     ],
 
+    // For Japanese version, refer to ../ja/config.ts
     sidebar: [
       {
         text: "Getting Started",
@@ -54,8 +56,8 @@ export default defineConfig({
         text: "Interfaces",
         items: [
           { text: "Art-Net", link: "/interfaces/artnet" },
-          { text: "Signal Generator", link: "/interfaces/signal" },
           { text: "FTDI", link: "/interfaces/ftdi" },
+          { text: "Generator", link: "/interfaces/generator" },
         ],
       },
     ],
