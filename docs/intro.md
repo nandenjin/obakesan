@@ -42,7 +42,7 @@ Obakesan (Signal Generator)
   Output to devices or visualizers
 ```
 
-Generate test signals with sine, square, or sawtooth waveforms at configurable frequencies to verify your lighting setup works correctly.
+Generate test signals with sine, square, or sawtooth waveforms to verify your lighting setup works correctly. The signal generator is a testing tool that provides predictable patterns for troubleshooting.
 
 ### Protocol Conversion and Monitoring
 
