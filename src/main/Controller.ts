@@ -121,6 +121,12 @@ export class Controller extends EventEmitter {
   private async updateReceiver(config: ConfigStore["input"]) {
     const { host, port, net, subnet, universe } = config;
     logger.debug("Config store changed", host, port, net, subnet, universe);
+    if (this.receiver) {
+      logger.debug("Shutting down previous receiver...");
+      this.receiver.close();
+      this.receiver = null; // Ensure receiver is cleared
+      this.dmxStore.clear(); // Clear channel values when switching input source
+    }
 
     if (
       !validateHost(host) ||
