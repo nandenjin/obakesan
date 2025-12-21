@@ -115,7 +115,7 @@ export class Controller extends EventEmitter {
       case "artnet":
         await this.updateReceiver(config);
         break;
-      case "signal":
+      case "generator":
         await this.updateSignalGenerator(config);
         break;
     }

@@ -32,5 +32,5 @@ Forward received signals to any output interface, functioning as a simple protoc
 Currently supports the following interfaces (protocols):
 
 - [Art-Net](./interfaces/artnet) - Network-based DMX protocol
-- [Signal Generator](./interfaces/signal) - Generate test signals with mathematical waveforms
+- [Signal Generator](./interfaces/generator) - Generate test signals with mathematical waveforms
 - [FTDI USB DMX](./interfaces/ftdi) (output only) - USB DMX interface

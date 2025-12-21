@@ -21,11 +21,11 @@
             </template>
           </span>
           <span
-            v-else-if="config.input.type === 'signal'"
+            v-else-if="config.input.type === 'generator'"
             class="label"
             :class="{ 'is-valid': isInputValid }"
           >
-            Signal: {{ config.input.waveType }}
+            Generator: {{ config.input.waveType }}
             <template v-if="!isInputLost">
               @ {{ Math.round(dmx.fps) }}fps
             </template>
@@ -89,7 +89,7 @@
             v-model="inputSelection"
             :options="[
               { label: 'Art-Net', value: 'artnet' },
-              { label: 'Signal', value: 'signal' },
+              { label: 'Generator', value: 'generator' },
             ]"
           />
         </div>
@@ -102,7 +102,7 @@
           v-model:universe="input.universe"
         />
         <ConfigPanelSignalInput
-          v-else-if="input.type === 'signal'"
+          v-else-if="input.type === 'generator'"
           v-model:wave-type="input.waveType"
         />
       </ConfigPanelSection>
@@ -266,7 +266,7 @@ const inputSelection = computed({
     return input.type;
   },
   set(value) {
-    input.type = value as "artnet" | "signal";
+    input.type = value as "artnet" | "generator";
   },
 });
 
