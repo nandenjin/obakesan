@@ -76,27 +76,27 @@ export class SignalGenerator extends EventEmitter {
    */
   private generateFrame(): void {
     const elapsedSeconds = (Date.now() - this.startTime) / 1000;
-    const phase = (elapsedSeconds * this.frequency) % 1; // 0 to 1
-    let value: number;
-    switch (this.waveType) {
-      case "sine":
-        // Sine wave: 0 to 255
-        value = Math.floor((Math.sin(phase * 2 * Math.PI) + 1) * 127.5);
-        break;
-      case "square":
-        // Square wave: 0 or 255
-        value = phase < 0.5 ? 0 : 255;
-        break;
-      case "sawtooth":
-        // Sawtooth wave: 0 to 255 linearly
-        value = Math.floor(phase * 255);
-        break;
-      default:
-        value = 0;
-    }
 
-    // Set all 512 channels to the same value efficiently
     for (let i = 0; i < 512; i++) {
+      let value: number;
+      const phase = (elapsedSeconds * this.frequency + i / 512) % 1; // 0 to 1
+      switch (this.waveType) {
+        case "sine":
+          // Sine wave: 0 to 255
+          value = Math.floor(((Math.sin(phase * 2 * Math.PI) + 1) / 2) * 255);
+          break;
+        case "square":
+          // Square wave: 0 or 255
+          value = phase < 0.5 ? 0 : 255;
+          break;
+        case "sawtooth":
+          // Sawtooth wave: 0 to 255 linearly
+          value = Math.floor(phase * 255);
+          break;
+        default:
+          value = 0;
+      }
+
       this.buffer.data[i] = value;
     }
   }
