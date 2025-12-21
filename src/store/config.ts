@@ -3,11 +3,13 @@ import { reactive } from "vue";
 
 export const useConfigStore = defineStore("config", () => {
   const input = reactive({
+    type: "artnet" as "artnet" | "generator",
     host: "0.0.0.0",
     port: 6454,
     net: 0,
     subnet: 0,
     universe: 0,
+    waveType: "sine" as "sine" | "square" | "sawtooth",
   });
 
   const output = reactive({

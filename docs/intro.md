@@ -34,6 +34,14 @@ Production software (TouchDesigner, MaxMSP, etc.)
 
 Even without physical equipment, you can verify DMX values being sent from production software. Check behavior immediately and continue development without requiring actual devices.
 
+Alternatively, use the built-in Generator to test your setup:
+
+```
+Obakesan (Generator)
+  -- (Art-Net or USB DMX) -->
+  Output to devices or visualizers
+```
+
 ### Protocol Conversion and Monitoring
 
 ```

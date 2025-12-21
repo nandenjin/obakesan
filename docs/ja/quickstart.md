@@ -41,5 +41,6 @@ Windows, macOS, Linux で利用できます。
 
 現在は以下のインターフェース（プロトコル）に対応しています。
 
-- [Art-Net](./interfaces/artnet)
-- [FTDI USB DMX](./interfaces/ftdi)（出力のみ）
+- [Art-Net](./interfaces/artnet) - ネットワークベースの DMX プロトコル
+- [ジェネレータ](./interfaces/generator) - 数学的な波形でテスト信号を生成
+- [FTDI USB DMX](./interfaces/ftdi)（出力のみ）- USB DMX インターフェース
