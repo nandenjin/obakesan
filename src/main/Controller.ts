@@ -26,10 +26,7 @@ import {
   getFtdiDeviceInfo,
   listFtdiDevices,
 } from "../lib/FtdiTransmitter";
-import {
-  createSignalGenerator,
-  SignalGenerator,
-} from "../lib/SignalGenerator";
+import { createSignalGenerator, SignalGenerator } from "../lib/SignalGenerator";
 import { StatusReason, useStatusStore } from "../store/status";
 import { logger as baseLogger } from "./lib/logger";
 
@@ -180,8 +177,8 @@ export class Controller extends EventEmitter {
   }
 
   private async updateSignalGenerator(config: ConfigStore["input"]) {
-    const { waveType, frequency } = config;
-    logger.debug("Starting signal generator...", { waveType, frequency });
+    const { waveType } = config;
+    logger.debug("Starting signal generator...", { waveType });
 
     try {
       this.statusStore.input.connection = "connecting";
@@ -189,7 +186,7 @@ export class Controller extends EventEmitter {
 
       const generator = await createSignalGenerator({
         waveType,
-        frequency,
+        frequency: 1 / 5,
         fps: 30,
       });
 
@@ -207,12 +204,12 @@ export class Controller extends EventEmitter {
 
       this.signalGenerator = generator;
       this.statusStore.input.connection = "connected";
-      logger.success("Signal generator started", { waveType, frequency });
+      logger.success("Signal generator started", { waveType });
     } catch (error) {
       logger.error(error);
       this.statusStore.input.connection = "error";
       this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
-      logger.fail("Failed to start signal generator", { waveType, frequency });
+      logger.fail("Failed to start signal generator", { waveType });
     }
   }
 
