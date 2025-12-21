@@ -32,6 +32,9 @@ import { logger as baseLogger } from "./lib/logger";
 
 const logger = baseLogger.withTag("Controller");
 
+// Fixed frequency for signal generator (0.2 Hz = 5 second cycle)
+const SIGNAL_GENERATOR_FREQUENCY = 0.2;
+
 type ControllerEvent = {
   "store:emit": <K extends keyof SS>(
     storeId: K,
@@ -192,7 +195,7 @@ export class Controller extends EventEmitter {
 
       const generator = await createSignalGenerator({
         waveType,
-        frequency: 1 / 5,
+        frequency: SIGNAL_GENERATOR_FREQUENCY,
         fps: 30,
       });
 
