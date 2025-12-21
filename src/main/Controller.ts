@@ -28,6 +28,7 @@ import {
 } from "../lib/FtdiTransmitter";
 import { StatusReason, useStatusStore } from "../store/status";
 import { logger as baseLogger } from "./lib/logger";
+import { loadConfig, saveConfig } from "./lib/configPersistence";
 
 const logger = baseLogger.withTag("Controller");
 
@@ -69,6 +70,8 @@ export class Controller extends EventEmitter {
     const statusStore = useStatusStore(this.pinia);
     this.statusStore = statusStore;
 
+    this.loadPersistedConfig();
+    this.setupConfigPersistence();
     this.setupReceiver();
     this.setupTransmitter();
     this.setupDeviceScanner();
@@ -81,6 +84,53 @@ export class Controller extends EventEmitter {
           this.transmitter.buffer.set(this.dmxStore.buffer);
         }
       }
+    );
+  }
+
+  /**
+   * Load persisted configuration from disk and apply it
+   */
+  private async loadPersistedConfig() {
+    try {
+      const config = await loadConfig();
+      if (config) {
+        logger.info("Applying persisted config");
+        // Use the store's restore method
+        this.configStore.restoreState(config);
+      }
+    } catch (error) {
+      logger.error("Failed to load persisted config", error);
+    }
+  }
+
+  /**
+   * Setup watchers to persist config changes
+   */
+  private setupConfigPersistence() {
+    let saveTimeout: NodeJS.Timeout | null = null;
+    
+    // Watch for changes to input and output config and save them
+    // Debounce to prevent excessive disk I/O
+    watch(
+      [() => this.configStore.input, () => this.configStore.output],
+      async () => {
+        // Clear existing timeout
+        if (saveTimeout) {
+          clearTimeout(saveTimeout);
+        }
+        
+        // Set new timeout to save after 500ms of inactivity
+        saveTimeout = setTimeout(async () => {
+          try {
+            // Get persistable state from the store
+            const config = this.configStore.getPersistableState();
+            await saveConfig(config);
+          } catch (error) {
+            logger.error("Failed to save config", error);
+          }
+        }, 500);
+      },
+      { deep: true }
     );
   }
 
