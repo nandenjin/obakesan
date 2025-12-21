@@ -19,6 +19,11 @@ export interface SignalGeneratorOptions {
    * @default 30
    */
   fps?: number;
+  /**
+   * Spatial frequency (cycles per universe)
+   * @default 1
+   */
+  spatialFrequency?: number;
 }
 
 interface SignalGeneratorEvents {
@@ -34,6 +39,7 @@ export class SignalGenerator extends EventEmitter {
   waveType: WaveType = "sine";
   frequency: number = 1;
   fps: number = 30;
+  spatialFrequency: number = 1;
 
   /**
    * DMX data buffer
@@ -50,6 +56,7 @@ export class SignalGenerator extends EventEmitter {
       this.waveType = options.waveType ?? "sine";
       this.frequency = options.frequency ?? 1;
       this.fps = options.fps ?? 30;
+      this.spatialFrequency = options.spatialFrequency ?? 1;
     }
   }
 
@@ -79,7 +86,10 @@ export class SignalGenerator extends EventEmitter {
 
     for (let i = 0; i < 512; i++) {
       let value: number;
-      const phase = (elapsedSeconds * this.frequency + i / 512) % 1; // 0 to 1
+      const phase =
+        (elapsedSeconds * this.frequency +
+          (1 - i / 512) * this.spatialFrequency) %
+        1; // 0 to 1
       switch (this.waveType) {
         case "sine":
           // Sine wave: 0 to 255

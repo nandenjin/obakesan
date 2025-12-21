@@ -197,6 +197,7 @@ export class Controller extends EventEmitter {
         waveType,
         frequency: SIGNAL_GENERATOR_FREQUENCY,
         fps: 30,
+        spatialFrequency: 50,
       });
 
       generator.on("update", () => {
