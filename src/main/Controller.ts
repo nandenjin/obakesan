@@ -183,8 +183,8 @@ export class Controller extends EventEmitter {
   }
 
   private async updateSignalGenerator(config: ConfigStore["input"]) {
-    const { waveType } = config;
-    logger.debug("Starting signal generator...", { waveType });
+    const { waveType, frequency } = config;
+    logger.debug("Starting signal generator...", { waveType, frequency });
 
     try {
       this.statusStore.input.connection = "connecting";
@@ -192,7 +192,7 @@ export class Controller extends EventEmitter {
 
       const generator = await createSignalGenerator({
         waveType,
-        frequency: 1 / 5,
+        frequency,
         fps: 30,
       });
 
@@ -210,12 +210,12 @@ export class Controller extends EventEmitter {
 
       this.signalGenerator = generator;
       this.statusStore.input.connection = "connected";
-      logger.success("Signal generator started", { waveType });
+      logger.success("Signal generator started", { waveType, frequency });
     } catch (error) {
       logger.error(error);
       this.statusStore.input.connection = "error";
       this.statusStore.input.reasons.push(StatusReason.FAILED_TO_CONNECT);
-      logger.fail("Failed to start signal generator", { waveType });
+      logger.fail("Failed to start signal generator", { waveType, frequency });
     }
   }
 

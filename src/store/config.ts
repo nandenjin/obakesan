@@ -10,6 +10,7 @@ export const useConfigStore = defineStore("config", () => {
     subnet: 0,
     universe: 0,
     waveType: "sine" as "sine" | "square" | "sawtooth",
+    frequency: 1,
   });
 
   const output = reactive({

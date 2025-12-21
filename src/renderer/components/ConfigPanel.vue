@@ -104,6 +104,7 @@
         <ConfigPanelSignalInput
           v-else-if="input.type === 'signal'"
           v-model:wave-type="input.waveType"
+          v-model:frequency="input.frequency"
         />
       </ConfigPanelSection>
 
@@ -173,6 +174,7 @@ const input = reactive<typeof config.input>({
   subnet: 0,
   universe: 0,
   waveType: "sine",
+  frequency: 1,
 });
 
 const output = reactive<typeof config.output>({
@@ -313,6 +315,7 @@ function setConfig() {
   config.input.subnet = input.subnet;
   config.input.universe = input.universe;
   config.input.waveType = input.waveType;
+  config.input.frequency = input.frequency;
 
   config.output.enabled = output.enabled;
   config.output.type = output.type;
@@ -344,6 +347,7 @@ watch(
     input.subnet = newInput.subnet;
     input.universe = newInput.universe;
     input.waveType = newInput.waveType;
+    input.frequency = newInput.frequency;
   },
   { immediate: true }
 );
