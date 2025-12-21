@@ -7,7 +7,7 @@ import eslintConfigPrettier from "eslint-config-prettier";
 import eslint from "@eslint/js";
 
 const config = typescriptEslint.config([
-  { ignores: ["*.d.ts", "**/coverage", "**/dist", "**/out"] },
+  { ignores: ["*.d.ts", "**/coverage", "**/dist", "**/out", "**/examples"] },
   eslint.configs.recommended,
   ...typescriptEslint.configs.recommended,
   ...pluginVue.configs["flat/recommended"],

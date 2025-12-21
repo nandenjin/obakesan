@@ -380,34 +380,22 @@ export class Controller extends EventEmitter {
    * @param config
    */
   private async connectOscTransmitter(config: ConfigStore["output"]) {
-    const {
-      host,
-      port,
-      oscPath,
-      oscStartChannel,
-      oscLength,
-      oscDataType,
-      fps,
-    } = config;
-    if (
-      !validateHost(host) ||
-      !validatePort(port) ||
-      !validatePath(oscPath) ||
-      !validateChannelRange(oscStartChannel, oscLength)
-    ) {
+    const { host, port, oscPath, fps } = config;
+    if (!validateHost(host) || !validatePort(port) || !validatePath(oscPath)) {
       logger.info("OSC transmitter is stopped due to invalid config");
       this.statusStore.output.connection = "idle";
       this.statusStore.output.reasons = [StatusReason.INVALID_CONFIG];
       return;
     }
 
+    // OSC output always sends whole universe (512 channels) as blob
     const options: OscTransmitterOptions = {
       host,
       port,
       path: oscPath,
-      startChannel: oscStartChannel,
-      length: oscLength,
-      dataType: oscDataType,
+      startChannel: 1,
+      length: 512,
+      dataType: "blob",
       fps,
     };
 

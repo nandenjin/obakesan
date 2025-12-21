@@ -145,9 +145,6 @@
             v-model:host="output.host"
             v-model:port="output.port"
             v-model:osc-path="output.oscPath"
-            v-model:osc-start-channel="output.oscStartChannel"
-            v-model:osc-length="output.oscLength"
-            v-model:osc-data-type="output.oscDataType"
             v-model:fps="output.fps"
           />
         </template>
@@ -205,10 +202,7 @@ const output = reactive<typeof config.output>({
   universe: 0,
   fps: 0,
   deviceSerial: "",
-  oscPath: "/dmx/:channel",
-  oscStartChannel: 1,
-  oscLength: 512,
-  oscDataType: "int",
+  oscPath: "/dmx",
 });
 
 const logoVariant = computed(() => {
@@ -351,9 +345,6 @@ function setConfig() {
   config.output.fps = output.fps;
   config.output.deviceSerial = output.deviceSerial;
   config.output.oscPath = output.oscPath;
-  config.output.oscStartChannel = output.oscStartChannel;
-  config.output.oscLength = output.oscLength;
-  config.output.oscDataType = output.oscDataType;
 }
 
 watch(
@@ -394,9 +385,6 @@ watch(
     output.fps = newOutput.fps;
     output.deviceSerial = newOutput.deviceSerial;
     output.oscPath = newOutput.oscPath;
-    output.oscStartChannel = newOutput.oscStartChannel;
-    output.oscLength = newOutput.oscLength;
-    output.oscDataType = newOutput.oscDataType;
   },
   { immediate: true }
 );

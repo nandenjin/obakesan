@@ -26,11 +26,8 @@ export const useConfigStore = defineStore("config", () => {
     universe: 0,
     fps: 30,
     deviceSerial: "",
-    // OSC-specific settings
-    oscPath: "/dmx/:channel",
-    oscStartChannel: 1,
-    oscLength: 512,
-    oscDataType: "int" as "int" | "float" | "blob",
+    // OSC-specific settings (output always uses whole-universe blob)
+    oscPath: "/dmx",
   });
 
   return {

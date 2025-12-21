@@ -37,29 +37,21 @@ When configured as an **Output**, the application sends DMX data via OSC message
 
 ### Settings
 
-| Setting             | Description                                                                                                                          |
-| :------------------ | :----------------------------------------------------------------------------------------------------------------------------------- |
-| **Host**            | The destination IP address. Use `127.0.0.1` for localhost or a specific IP for remote targets.                                      |
-| **Port**            | The destination network port. Default is `8000`.                                                                                     |
-| **OSC Path**        | The OSC address pattern to send. Use `:channel` as placeholder for channel numbers, e.g., `/dmx/:channel` or `/0/dmx/:channel`.     |
-| **Start Channel**   | The first DMX channel to transmit (1-512).                                                                                           |
-| **Length**          | Number of consecutive DMX channels to transmit (1-512).                                                                              |
-| **Data Type**       | The data format: **Int** (0-255 integer), **Float** (0.0-1.0 normalized), or **Blob** (binary data for whole universe).            |
-| **FPS**             | Frames Per Second. Controls how frequently OSC messages are sent.                                                                    |
+| Setting      | Description                                                                                      |
+| :----------- | :----------------------------------------------------------------------------------------------- |
+| **Host**     | The destination IP address. Use `127.0.0.1` for localhost or a specific IP for remote targets. |
+| **Port**     | The destination network port. Default is `8000`.                                                 |
+| **OSC Path** | The OSC address to send data to, e.g., `/dmx` or `/universe/0`.                                 |
+| **FPS**      | Frames Per Second. Controls how frequently OSC messages are sent.                                |
 
-### Usage Examples
+**Note**: Output always sends the **whole DMX universe (512 channels) as a binary blob** for maximum efficiency and simplicity.
 
-#### Per-Channel Mode
+### Usage Example
 
-Set **OSC Path** to `/dmx/:channel` to send individual messages for each channel:
-- Channel 1 → `/dmx/1` with integer value
-- Channel 100 → `/dmx/100` with integer value
-
-#### Whole Universe Mode
-
-Set **OSC Path** to `/dmx/universe` (without `:channel` placeholder) to send all channels in a single message:
-- For **Int** or **Float**: All channel values sent as separate arguments
-- For **Blob**: All channel values sent as binary blob
+The transmitter sends all 512 DMX channels as a binary blob in a single OSC message:
+- OSC Address: `/dmx` (or your custom path)
+- Data Type: Blob (binary data containing 512 bytes)
+- Each byte represents one DMX channel value (0-255)
 
 ## OSC Protocol Details
 
@@ -67,8 +59,18 @@ Obakesan implements standard OSC protocol over UDP:
 
 - **Transport**: UDP over Ethernet/Wi-Fi
 - **Message Format**: OSC messages with type tags
-- **Supported Types**: Integer (`i`), Float (`f`), Blob (`b`)
+- **Output Format**: Binary blob containing 512 DMX channel values
+- **Input Support**: Integer (`i`), Float (`f`), and Blob (`b`) types
 - **Channel Range**: 1-512 DMX channels
+
+## Example Scripts
+
+Example scripts for testing and integration are available in the `examples/osc/` directory:
+
+- **osc-receiver-example.js** - Receives DMX data from obakesan and prints to console
+- **osc-transmitter-example.js** - Sends test patterns to obakesan (supports both input modes)
+
+See [`examples/osc/README.md`](../../examples/osc/README.md) for usage instructions.
 
 ## Compatible Software
 
