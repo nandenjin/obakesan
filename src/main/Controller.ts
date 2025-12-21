@@ -28,11 +28,7 @@ import {
 } from "../lib/FtdiTransmitter";
 import { StatusReason, useStatusStore } from "../store/status";
 import { logger as baseLogger } from "./lib/logger";
-import {
-  loadConfig,
-  saveConfig,
-  createPersistedConfig,
-} from "./lib/configPersistence";
+import { loadConfig, saveConfig } from "./lib/configPersistence";
 
 const logger = baseLogger.withTag("Controller");
 
@@ -99,9 +95,8 @@ export class Controller extends EventEmitter {
       const config = await loadConfig();
       if (config) {
         logger.info("Applying persisted config");
-        // Apply loaded config to the store
-        Object.assign(this.configStore.input, config.input);
-        Object.assign(this.configStore.output, config.output);
+        // Use the store's restore method
+        this.configStore.restoreState(config);
       }
     } catch (error) {
       logger.error("Failed to load persisted config", error);
@@ -118,7 +113,7 @@ export class Controller extends EventEmitter {
     // Debounce to prevent excessive disk I/O
     watch(
       [() => this.configStore.input, () => this.configStore.output],
-      async ([input, output]) => {
+      async () => {
         // Clear existing timeout
         if (saveTimeout) {
           clearTimeout(saveTimeout);
@@ -127,10 +122,8 @@ export class Controller extends EventEmitter {
         // Set new timeout to save after 500ms of inactivity
         saveTimeout = setTimeout(async () => {
           try {
-            const config = createPersistedConfig(
-              { ...input },
-              { ...output }
-            );
+            // Get persistable state from the store
+            const config = this.configStore.getPersistableState();
             await saveConfig(config);
           } catch (error) {
             logger.error("Failed to save config", error);
