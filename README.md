@@ -14,7 +14,8 @@ A DMX / Art-Net Monitor or Converter App for Stage Designers and Artists.
 ## ✨️ Features
 
 - 🌀 **Simple and Lightweight**
-- 🧰 Supports **Art-Net and FTDI USB DMX (output only)**
+- 🧰 Supports **Art-Net, Signal Generator, and FTDI USB DMX (output only)**
+- 📊 Built-in **Signal Generator** with sine, square, and sawtooth waveforms
 - 🖥️ Works on **Windows, macOS and Linux**
 
 <img src="/docs/public/screenshot.png" height="300" alt="Image of screenshot of the app with table of DMX channels">

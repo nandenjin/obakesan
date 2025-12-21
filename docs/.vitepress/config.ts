@@ -54,6 +54,7 @@ export default defineConfig({
         text: "Interfaces",
         items: [
           { text: "Art-Net", link: "/interfaces/artnet" },
+          { text: "Signal Generator", link: "/interfaces/signal" },
           { text: "FTDI", link: "/interfaces/ftdi" },
         ],
       },
