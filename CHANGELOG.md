@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/nandenjin/obakesan/compare/v0.1.0...v0.2.0) (2025-12-22)
+
+
+### Features
+
+* Add signal generator as input source (testing tool) ([#20](https://github.com/nandenjin/obakesan/issues/20)) ([668ce9a](https://github.com/nandenjin/obakesan/commit/668ce9a598552d1ea694f3d76358ae8aa9e04500))
+
+
+### Bug Fixes
+
+* Clear DMX buffer when input source changes ([#15](https://github.com/nandenjin/obakesan/issues/15)) ([78d5893](https://github.com/nandenjin/obakesan/commit/78d5893bb1e618cb1523bc574d72deabbee73657))
+* Copy whole userAgent string ([7e55e27](https://github.com/nandenjin/obakesan/commit/7e55e278e0b1d5099c87000d5059f0c4f9025de0))
+
 ## [0.1.0](https://github.com/nandenjin/obakesan/compare/v0.0.4...v0.1.0) (2025-12-19)
 
 
