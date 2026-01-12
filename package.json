@@ -42,7 +42,7 @@
     "eslint-plugin-vue": "10.6.2",
     "globals": "16.5.0",
     "jiti": "2.6.1",
-    "typescript-eslint": "8.51.0",
+    "typescript-eslint": "8.52.0",
     "vitepress": "2.0.0-alpha.15",
     "vue-tsc": "3.2.1"
   }
