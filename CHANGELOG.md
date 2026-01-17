@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/nandenjin/obakesan/compare/v0.2.0...v0.2.1) (2026-01-17)
+
+
+### Bug Fixes
+
+* **deps:** update dependency electron-updater to v6.7.3 ([83e3cf4](https://github.com/nandenjin/obakesan/commit/83e3cf421a17693c769d3cba70270ed5a5b5a8ab))
+* **deps:** update dependency vue to v3.5.26 ([d436fff](https://github.com/nandenjin/obakesan/commit/d436fffa3653ed99b96db1054a92fa0cff177b8e))
+
 ## [0.2.0](https://github.com/nandenjin/obakesan/compare/v0.1.0...v0.2.0) (2025-12-22)
 
 
