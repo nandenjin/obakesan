@@ -1,6 +1,6 @@
 {
   "name": "@nandenjin/obakesan",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A monitor or converter app for stage lighting system",
   "main": "out/main/main.js",
   "scripts": {

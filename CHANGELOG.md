@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/nandenjin/obakesan/compare/v0.2.1...v0.2.2) (2026-01-17)
+
+
+### Bug Fixes
+
+* add x64ArchFiles for macOS build ([#24](https://github.com/nandenjin/obakesan/issues/24)) ([6614b83](https://github.com/nandenjin/obakesan/commit/6614b83ed5391c3c369f2869989509f5d25763aa))
+
 ## [0.2.1](https://github.com/nandenjin/obakesan/compare/v0.2.0...v0.2.1) (2026-01-17)
 
 
