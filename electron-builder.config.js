@@ -22,6 +22,7 @@ module.exports = {
     notarize: !!process.env.ENABLE_APPLE_NOTARIZATION,
     icon: "build/icon_mac.png",
     artifactName: "obakesan-${version}-mac.${ext}",
+    x64ArchFiles: "**/ftdi-d2xx.Darwin.*.node",
   },
   dmg: {
     artifactName: "obakesan-${version}-mac.${ext}",
