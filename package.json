@@ -44,6 +44,6 @@
     "jiti": "2.6.1",
     "typescript-eslint": "8.53.1",
     "vitepress": "2.0.0-alpha.15",
-    "vue-tsc": "3.2.3"
+    "vue-tsc": "3.2.4"
   }
 }
