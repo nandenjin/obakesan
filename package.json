@@ -30,7 +30,7 @@
     "vue": "3.5.33"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "1.61.4",
+    "@dotenvx/dotenvx": "1.61.5",
     "@eslint/js": "10.0.1",
     "@vitejs/plugin-vue": "6.0.6",
     "electron": "41.2.2",
