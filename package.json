@@ -33,7 +33,7 @@
     "@dotenvx/dotenvx": "1.64.0",
     "@eslint/js": "10.0.1",
     "@vitejs/plugin-vue": "6.0.6",
-    "electron": "41.3.0",
+    "electron": "41.4.0",
     "electron-builder": "26.8.1",
     "electron-devtools-installer": "4.0.0",
     "electron-vite": "5.0.0",
