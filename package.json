@@ -39,7 +39,7 @@
     "electron-vite": "5.0.0",
     "eslint": "10.3.0",
     "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-vue": "10.9.0",
+    "eslint-plugin-vue": "10.9.1",
     "globals": "17.6.0",
     "jiti": "2.6.1",
     "typescript-eslint": "8.59.2",
