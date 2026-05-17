@@ -21,7 +21,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@fontsource/roboto-mono": "5.2.8",
+    "@fontsource/roboto-mono": "5.2.9",
     "consola": "3.4.2",
     "electron-log": "5.4.3",
     "electron-updater": "6.8.3",
