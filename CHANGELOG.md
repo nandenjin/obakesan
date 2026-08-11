@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.4](https://github.com/nandenjin/obakesan/compare/v0.2.3...v0.2.4) (2026-08-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fontsource/roboto-mono to v5.2.9 ([153dfca](https://github.com/nandenjin/obakesan/commit/153dfcacd52418f206fdc464fba0c7368451984d))
+* **deps:** update dependency electron-log to v5.4.4 ([c14efa5](https://github.com/nandenjin/obakesan/commit/c14efa535e4f2c834ec5659fe4b40056e42d6331))
+* **deps:** update dependency electron-updater to v6.8.6 ([5274f12](https://github.com/nandenjin/obakesan/commit/5274f12af51ee02515ee18af1b5ab08ff8ab1299))
+* **deps:** update dependency electron-updater to v6.8.7 ([40956c8](https://github.com/nandenjin/obakesan/commit/40956c8c6293c5e095969e8670529bbbb6d5be2a))
+* **deps:** update dependency electron-updater to v6.8.8 ([bdb0367](https://github.com/nandenjin/obakesan/commit/bdb03670fdf68bf416548ba9c328e6545c6259d8))
+* **deps:** update dependency electron-updater to v6.8.9 ([3841ff2](https://github.com/nandenjin/obakesan/commit/3841ff23fb5480b4c104204412af4357565728ec))
+* **deps:** update dependency vue to v3.5.31 ([901d86e](https://github.com/nandenjin/obakesan/commit/901d86ea7007631fa16b145df5cc1808394615a1))
+* **deps:** update dependency vue to v3.5.32 ([dc76711](https://github.com/nandenjin/obakesan/commit/dc76711edc64a7961d97683944ef7d384605bf70))
+* **deps:** update dependency vue to v3.5.33 ([bd54c8e](https://github.com/nandenjin/obakesan/commit/bd54c8ed8226c7f341d447cc594131f2d31ebb1d))
+* **deps:** update dependency vue to v3.5.34 ([60eefbd](https://github.com/nandenjin/obakesan/commit/60eefbdb9e9dca62b6781cc1054c38740c38dcb1))
+* **deps:** update vue monorepo to v3.5.35 ([68af792](https://github.com/nandenjin/obakesan/commit/68af7925a8da109610e65bd1511aedc76c2811cc))
+* **deps:** update vue monorepo to v3.5.36 ([#47](https://github.com/nandenjin/obakesan/issues/47)) ([565cf6c](https://github.com/nandenjin/obakesan/commit/565cf6cf6f06b55c137703c400481cbf020bab48))
+
 ## [0.2.3](https://github.com/nandenjin/obakesan/compare/v0.2.2...v0.2.3) (2026-03-29)
 
 
