@@ -43,7 +43,7 @@
     "globals": "17.13.0",
     "jiti": "2.7.0",
     "typescript-eslint": "8.72.0",
-    "vitepress": "2.0.0-alpha.20",
+    "vitepress": "2.0.0-alpha.21",
     "vue-tsc": "3.3.13"
   }
 }
