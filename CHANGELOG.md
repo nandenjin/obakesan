@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.5](https://github.com/nandenjin/obakesan/compare/v0.2.4...v0.2.5) (2026-11-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @fontsource/roboto-mono to v5.3.0 ([b1a0742](https://github.com/nandenjin/obakesan/commit/b1a0742f4865f028f298657e5545849131e58e0a))
+* **deps:** update dependency electron-updater to v6.8.10 ([06fafe4](https://github.com/nandenjin/obakesan/commit/06fafe4afed3d82081c60733a0cda255ffe38b35))
+* **deps:** update dependency electron-updater to v6.8.11 ([26e4c94](https://github.com/nandenjin/obakesan/commit/26e4c94b3fbdba7a06f04eb45bff54ad5b470819))
+* **deps:** update dependency pinia to v4 ([#58](https://github.com/nandenjin/obakesan/issues/58)) ([b866d85](https://github.com/nandenjin/obakesan/commit/b866d8520fb7d2c16893fb3d6644d25d842cafa6))
+* **deps:** update dependency vue to v3.5.42 ([df96f40](https://github.com/nandenjin/obakesan/commit/df96f4099fbfa7efbcdaadf993ed9a540a80b994))
+* **deps:** update dependency vue to v3.5.43 ([c00a02f](https://github.com/nandenjin/obakesan/commit/c00a02f9f3aa287f2e4bbf1382a5ba7634f000ba))
+* **deps:** update dependency vue to v3.5.44 ([658558b](https://github.com/nandenjin/obakesan/commit/658558bed06edc2c3843c0aeb31b941241b85471))
+
 ## [0.2.4](https://github.com/nandenjin/obakesan/compare/v0.2.3...v0.2.4) (2026-09-16)
 
 
