@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.6](https://github.com/nandenjin/obakesan/compare/v0.2.5...v0.2.6) (2026-11-09)
+
+
+### Bug Fixes
+
+* **deps:** add @vue/devtools-api as a direct dependency ([#64](https://github.com/nandenjin/obakesan/issues/64)) ([ff634a7](https://github.com/nandenjin/obakesan/commit/ff634a74c08c06f31b7d21649d98783dc2179ce3))
+
 ## [0.2.5](https://github.com/nandenjin/obakesan/compare/v0.2.4...v0.2.5) (2026-11-09)
 
 
