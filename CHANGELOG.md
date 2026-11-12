@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.7](https://github.com/nandenjin/obakesan/compare/v0.2.6...v0.2.7) (2026-11-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency vue to v3.5.45 ([57ee381](https://github.com/nandenjin/obakesan/commit/57ee38109ec0bacf6c30c0b3d4f69ec64a24a70a))
+
 ## [0.2.6](https://github.com/nandenjin/obakesan/compare/v0.2.5...v0.2.6) (2026-11-09)
 
 
